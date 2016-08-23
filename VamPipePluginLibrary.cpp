@@ -58,7 +58,7 @@ convertRequestJson(string input)
     if (!j["type"].is_string()) {
 	throw VampJson::Failure("string expected for type field");
     }
-    if (!j["content"].is_object()) {
+    if (!j["content"].is_null() && !j["content"].is_object()) {
 	throw VampJson::Failure("object expected for content field");
     }
     return j;
