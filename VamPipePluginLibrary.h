@@ -68,9 +68,6 @@ private:
     RequestOrResponse readRequest(std::string req) const;
     std::string writeResponse(const RequestOrResponse &resp) const;
 
-    //!!! pull out these next few into another class, a sort of mini
-    //!!! library-level analogue to PluginLoader ?
-    
     //!!! no type for this in RequestResponse.h in vamp sdk, should there be?
     std::vector<Vamp::HostExt::PluginStaticData> listPluginData() const;
     Vamp::HostExt::LoadResponse loadPlugin(Vamp::HostExt::LoadRequest r) const;

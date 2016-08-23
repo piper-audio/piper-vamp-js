@@ -78,7 +78,6 @@ VamPipePluginLibrary::readRequest(string req) const
     RequestOrResponse rr;
     rr.direction = RequestOrResponse::Request;
 
-    //!!! todo: handle exceptions (can't pass through C abi)
     Json j = convertRequestJson(req);
 
     //!!! reduce, reduce
@@ -185,94 +184,105 @@ VamPipePluginLibrary::configurePlugin(Vamp::HostExt::ConfigurationRequest req) c
 string
 VamPipePluginLibrary::requestJsonImpl(string req)
 {
-    RequestOrResponse request = readRequest(req);
+    RequestOrResponse request;
+
+    try {
+	request = readRequest(req);
+    } catch (const std::exception &e) {
+	return VampJson::fromException(e, RRType::NotValid).dump();
+    }
 
     RequestOrResponse response;
     response.direction = RequestOrResponse::Response;
     response.type = request.type;
 
-    switch (request.type) {
+    try {
+	switch (request.type) {
 
-    case RRType::List:
-	response.listResponse = listPluginData();
-	response.success = true;
-	break;
-
-    case RRType::Load:
-	response.loadResponse = loadPlugin(request.loadRequest);
-	if (response.loadResponse.plugin) {
-	    m_mapper.addPlugin(response.loadResponse.plugin);
+	case RRType::List:
+	    response.listResponse = listPluginData();
 	    response.success = true;
-	}
-	break;
-	
-    case RRType::Configure:
-    {
-	auto &creq = request.configurationRequest;
-	auto h = m_mapper.pluginToHandle(creq.plugin);
-	if (m_mapper.isConfigured(h)) {
-	    //!!! again, can't return through C abi
-	    throw runtime_error("plugin has already been configured");
-	}
+	    break;
 
-	response.configurationResponse = configurePlugin(creq);
-	
-	if (!response.configurationResponse.outputs.empty()) {
-	    m_mapper.markConfigured
-		(h, creq.configuration.channelCount, creq.configuration.blockSize);
-	    response.success = true;
-	}
-	break;
-    }
-
-    case RRType::Process:
-    {
-	auto &preq = request.processRequest;
-	auto h = m_mapper.pluginToHandle(preq.plugin);
-	if (!m_mapper.isConfigured(h)) {
-	    throw runtime_error("plugin has not been configured");
-	}
-
-	int channels = int(preq.inputBuffers.size());
-	if (channels != m_mapper.getChannelCount(h)) {
-	    throw runtime_error("wrong number of channels supplied to process");
-	}
-		
-	const float **fbuffers = new const float *[channels];
-	for (int i = 0; i < channels; ++i) {
-	    if (int(preq.inputBuffers[i].size()) != m_mapper.getBlockSize(h)) {
-		delete[] fbuffers;
-		throw runtime_error("wrong block size supplied to process");
+	case RRType::Load:
+	    response.loadResponse = loadPlugin(request.loadRequest);
+	    if (response.loadResponse.plugin) {
+		m_mapper.addPlugin(response.loadResponse.plugin);
+		response.success = true;
 	    }
-	    fbuffers[i] = preq.inputBuffers[i].data();
+	    break;
+	
+	case RRType::Configure:
+	{
+	    auto &creq = request.configurationRequest;
+	    auto h = m_mapper.pluginToHandle(creq.plugin);
+	    if (m_mapper.isConfigured(h)) {
+		//!!! again, can't return through C abi
+		throw runtime_error("plugin has already been configured");
+	    }
+
+	    response.configurationResponse = configurePlugin(creq);
+	
+	    if (!response.configurationResponse.outputs.empty()) {
+		m_mapper.markConfigured
+		    (h, creq.configuration.channelCount, creq.configuration.blockSize);
+		response.success = true;
+	    }
+	    break;
 	}
 
-	response.processResponse.features =
-	    preq.plugin->process(fbuffers, preq.timestamp);
-	response.success = true;
+	case RRType::Process:
+	{
+	    auto &preq = request.processRequest;
+	    auto h = m_mapper.pluginToHandle(preq.plugin);
+	    if (!m_mapper.isConfigured(h)) {
+		throw runtime_error("plugin has not been configured");
+	    }
 
-	delete[] fbuffers;
-	break;
-    }
+	    int channels = int(preq.inputBuffers.size());
+	    if (channels != m_mapper.getChannelCount(h)) {
+		throw runtime_error("wrong number of channels supplied to process");
+	    }
+		
+	    const float **fbuffers = new const float *[channels];
+	    for (int i = 0; i < channels; ++i) {
+		if (int(preq.inputBuffers[i].size()) != m_mapper.getBlockSize(h)) {
+		    delete[] fbuffers;
+		    throw runtime_error("wrong block size supplied to process");
+		}
+		fbuffers[i] = preq.inputBuffers[i].data();
+	    }
 
-    case RRType::Finish:
-    {
-	auto h = m_mapper.pluginToHandle(request.finishPlugin);
+	    response.processResponse.features =
+		preq.plugin->process(fbuffers, preq.timestamp);
+	    response.success = true;
 
-	response.finishResponse.features =
-	    request.finishPlugin->getRemainingFeatures();
+	    delete[] fbuffers;
+	    break;
+	}
+
+	case RRType::Finish:
+	{
+	    auto h = m_mapper.pluginToHandle(request.finishPlugin);
+
+	    response.finishResponse.features =
+		request.finishPlugin->getRemainingFeatures();
 	    
-	m_mapper.removePlugin(h);
-	delete request.finishPlugin;
-	response.success = true;
-	break;
-    }
+	    m_mapper.removePlugin(h);
+	    delete request.finishPlugin;
+	    response.success = true;
+	    break;
+	}
 
-    case RRType::NotValid:
-	break;
-    }
+	case RRType::NotValid:
+	    break;
+	}
     
-    return writeResponse(response);
+	return writeResponse(response);
+
+    } catch (const std::exception &e) {
+	return VampJson::fromException(e, request.type).dump();
+    }
 }
 
 }
