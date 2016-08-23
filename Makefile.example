@@ -2,20 +2,22 @@
 ADAPTER_HEADERS	:= VamPipeAdapter.h VamPipePluginLibrary.h 
 ADAPTER_SOURCES	:= VamPipePluginLibrary.cpp
 
+SDK_DIR		:= ../vamp-plugin-sdk
+
 PLUGIN_SOURCES	:= \
-		../vamp-plugin-sdk/examples/ZeroCrossing.cpp \
-		../vamp-plugin-sdk/examples/SpectralCentroid.cpp \
-		../vamp-plugin-sdk/examples/PercussionOnsetDetector.cpp \
-		../vamp-plugin-sdk/examples/FixedTempoEstimator.cpp \
-		../vamp-plugin-sdk/examples/AmplitudeFollower.cpp \
-		../vamp-plugin-sdk/examples/PowerSpectrum.cpp
+		$(SDK_DIR)/examples/ZeroCrossing.cpp \
+		$(SDK_DIR)/examples/SpectralCentroid.cpp \
+		$(SDK_DIR)/examples/PercussionOnsetDetector.cpp \
+		$(SDK_DIR)/examples/FixedTempoEstimator.cpp \
+		$(SDK_DIR)/examples/AmplitudeFollower.cpp \
+		$(SDK_DIR)/examples/PowerSpectrum.cpp
 
 OTHER_SOURCES	:= \
 		../json/json11/json11.cpp
 
 SDK_LIBS	:= \
-		../vamp-plugin-sdk/libvamp-hostsdk.a \
-		../vamp-plugin-sdk/libvamp-sdk.a
+		$(SDK_DIR)/libvamp-hostsdk.a \
+		$(SDK_DIR)/libvamp-sdk.a
 
 EXAMPLE_EXT	:= .so
 EXAMPLE		:= example$(EXAMPLE_EXT)
@@ -28,7 +30,7 @@ TEST_SOURCE	:= quick-test.cpp
 TEST_LDFLAGS	:= -ldl
 
 CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra -g
-INCPATH		:= -I../vamp-plugin-sdk -I.. -I../json
+INCPATH		:= -I$(SDK_DIR) -I.. -I../json
 
 all:		$(EXAMPLE) $(TEST)
 		./$(TEST)
@@ -40,3 +42,5 @@ $(EXAMPLE):	$(EXAMPLE_SOURCES) $(ADAPTER_HEADERS) $(SDK_LIBS)
 $(TEST):	$(TEST_SOURCE)
 		$(CXX) $(CXXFLAGS) -o $(TEST) $(TEST_SOURCE) $(TEST_LDFLAGS)
 
+clean:
+		rm -f $(EXAMPLE) $(TEST)

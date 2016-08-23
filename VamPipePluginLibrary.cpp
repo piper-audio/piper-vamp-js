@@ -217,7 +217,6 @@ VamPipePluginLibrary::requestJsonImpl(string req)
 	    auto &creq = request.configurationRequest;
 	    auto h = m_mapper.pluginToHandle(creq.plugin);
 	    if (m_mapper.isConfigured(h)) {
-		//!!! again, can't return through C abi
 		throw runtime_error("plugin has already been configured");
 	    }
 

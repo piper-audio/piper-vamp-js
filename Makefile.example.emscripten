@@ -1,0 +1,58 @@
+
+ADAPTER_HEADERS	:= VamPipeAdapter.h VamPipePluginLibrary.h 
+ADAPTER_SOURCES	:= VamPipePluginLibrary.cpp
+
+SDK_DIR		:= ../vamp-plugin-sdk
+
+PLUGIN_SOURCES	:= \
+		$(SDK_DIR)/examples/ZeroCrossing.cpp \
+		$(SDK_DIR)/examples/SpectralCentroid.cpp \
+		$(SDK_DIR)/examples/PercussionOnsetDetector.cpp \
+		$(SDK_DIR)/examples/FixedTempoEstimator.cpp \
+		$(SDK_DIR)/examples/AmplitudeFollower.cpp \
+		$(SDK_DIR)/examples/PowerSpectrum.cpp
+
+SDK_SOURCES	:= \
+        	$(SDK_DIR)/src/vamp-hostsdk/PluginBufferingAdapter.cpp \
+		$(SDK_DIR)/src/vamp-hostsdk/PluginChannelAdapter.cpp \
+        	$(SDK_DIR)/src/vamp-hostsdk/PluginHostAdapter.cpp \
+        	$(SDK_DIR)/src/vamp-hostsdk/PluginInputDomainAdapter.cpp \
+        	$(SDK_DIR)/src/vamp-hostsdk/PluginLoader.cpp \
+        	$(SDK_DIR)/src/vamp-hostsdk/PluginSummarisingAdapter.cpp \
+        	$(SDK_DIR)/src/vamp-hostsdk/PluginWrapper.cpp \
+        	$(SDK_DIR)/src/vamp-hostsdk/RealTime.cpp \
+        	$(SDK_DIR)/src/vamp-hostsdk/Files.cpp \
+		$(SDK_DIR)/src/vamp-sdk/PluginAdapter.cpp \
+		$(SDK_DIR)/src/vamp-sdk/RealTime.cpp \
+		$(SDK_DIR)/src/vamp-sdk/FFT.cpp
+
+OTHER_SOURCES	:= \
+		../json/json11/json11.cpp
+
+EMFLAGS		:= \
+		-s NO_FILESYSTEM=1 \
+		-s MODULARIZE=1 \
+		-s ERROR_ON_UNDEFINED_SYMBOLS=1 \
+	    	-s EXPORT_NAME="'ExampleModule'" \
+	    	-s EXPORTED_FUNCTIONS="['_vampipeRequestJson','_vampipeFreeJson']"
+
+# no longer exists?		-s NO_BROWSER=1 
+
+EXAMPLE_EXT	:= .js
+EXAMPLE		:= example$(EXAMPLE_EXT)
+EXAMPLE_SOURCE	:= example.cpp
+EXAMPLE_SOURCES	:= $(EXAMPLE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(OTHER_SOURCES)
+EXAMPLE_LDFLAGS	:= $(EMFLAGS)
+
+CXX		:= em++
+CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra -g
+INCPATH		:= -I$(SDK_DIR) -I.. -I../json
+
+all:		$(EXAMPLE)
+
+$(EXAMPLE):	$(EXAMPLE_SOURCES) $(ADAPTER_HEADERS) $(SDK_SOURCES)
+		$(CXX) $(CXXFLAGS) $(EMFLAGS) $(INCPATH) -o $(EXAMPLE) \
+		       $(EXAMPLE_SOURCES) $(SDK_SOURCES) $(EXAMPLE_LDFLAGS)
+
+clean:
+		rm -f $(EXAMPLE) $(EXAMPLE).map
