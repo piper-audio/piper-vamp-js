@@ -22,7 +22,16 @@ var vampipeFreeJson = exampleModule.cwrap(
     'vampipeFreeJson', 'void', ['number']
 );
 
+function note(blah) {
+    document.getElementById("test-result").innerHTML += blah + "<br>";
+}
+
+function comment(blah) {
+    note("<br><i>" + blah + "</i>");
+}
+
 function request(jsonStr) {
+    note("Request JSON = " + jsonStr);
     var m = exampleModule;
     // Inspection reveals that intArrayFromString converts the string
     // from utf16 to utf8, which is what we want (though the docs
@@ -33,44 +42,33 @@ function request(jsonStr) {
     m._free(inCstr);
     var result = m.Pointer_stringify(outCstr);
     vampipeFreeJson(outCstr);
+    note("Returned JSON = " + result);
     return result;
-}
-
-function note(blah) {
-    document.getElementById("test-result").innerHTML += blah + "<br>";
 }
 
 function test() {
 
-    note("Querying plugin list...");
+    comment("Querying plugin list...");
     var result = request('{"type": "list"}');
-    note("Result JSON = " + result);
 
-    note("<br>Loading zero crossings plugin...");
+    comment("Loading zero crossings plugin...");
     result = request('{"type":"load","content": {"pluginKey":"vamp-example-plugins:zerocrossing","inputSampleRate":16,"adapterFlags":["AdaptAllSafe"]}}');
-    note("Result JSON = " + result);
 
-    note("<br>I'm now assuming that the load succeeded and the returned pluginHandle was 1. I haven't bothered to parse the JSON. If those assumptions are wrong, this obviously isn't going to work. Configuring the plugin...");
+    comment("I'm now assuming that the load succeeded and the returned pluginHandle was 1. I haven't bothered to parse the JSON. If those assumptions are wrong, this obviously isn't going to work. Configuring the plugin...");
     result = request('{"type":"configure","content":{"pluginHandle":1,"configuration":{"blockSize": 8, "channelCount": 1, "stepSize": 8}}}');
-    note("Result JSON = " + result);
 
-    note("<br>If I try to configure it again, it should fail because it's already configured... but this doesn't change anything, and subsequent processing should work fine. Just an example of a failure call. NB this only works if Emscripten has exception catching enabled -- it's off by default in opt builds, which would just end the script here. Wonder what the performance penalty is like.");
+    comment("If I try to configure it again, it should fail because it's already configured... but this doesn't change anything, and subsequent processing should work fine. Just an example of a failure call. NB this only works if Emscripten has exception catching enabled -- it's off by default in opt builds, which would just end the script here. Wonder what the performance penalty is like.");
     result = request('{"type":"configure","content":{"pluginHandle":1,"configuration":{"blockSize": 8, "channelCount": 1, "stepSize": 8}}}');
-    note("Result JSON = " + result);
 
-    note("<br>Now processing a couple of blocks of data, on the same assumptions...");
+    comment("Now processing a couple of blocks of data, on the same assumptions...");
     result = request('{"type":"process","content":{"pluginHandle":1,"processInput":{"timestamp":{"s":0,"n":0},"inputBuffers":[{"values":[0,1,-1,0,1,-1,0,1]}]}}}');
-    note("Result JSON = " + result);
     result = request('{"type":"process","content":{"pluginHandle":1,"processInput":{"timestamp":{"s":0,"n":500000000},"inputBuffers":[{"values":[0,1,-1,0,1,-1,0,1]}]}}}');
-    note("Result JSON = " + result);
 
-    note("<br>Cleaning up the plugin and getting any remaining features...");
+    comment("Cleaning up the plugin and getting any remaining features...");
     result = request('{"type":"finish","content":{"pluginHandle":1}}');
-    note("Result JSON = " + result);
 
-    note("<br>A process call should now fail, as the plugin has been cleaned up.");
+    comment("A process call should now fail, as the plugin has been cleaned up.");
     result = request('{"type":"process","content":{"pluginHandle":1,"processInput":{"timestamp":{"s":0,"n":1000000000},"inputBuffers":[{"values":[0,1,-1,0,1,-1,0,1]}]}}}');
-    note("Result JSON = " + result);
 }
 
 window.onload = function() {
