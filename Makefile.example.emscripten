@@ -33,6 +33,7 @@ EMFLAGS		:= \
 		-s NO_FILESYSTEM=1 \
 		-s MODULARIZE=1 \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=1 \
+		-s DISABLE_EXCEPTION_CATCHING=0 \
 	    	-s EXPORT_NAME="'ExampleModule'" \
 	    	-s EXPORTED_FUNCTIONS="['_vampipeRequestJson','_vampipeFreeJson']"
 
@@ -45,7 +46,9 @@ EXAMPLE_SOURCES	:= $(EXAMPLE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(OTHE
 EXAMPLE_LDFLAGS	:= $(EMFLAGS)
 
 CXX		:= em++
-CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra -g
+#OPTFLAGS	:= -g3
+OPTFLAGS	:= -O3
+CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(OPTFLAGS)
 INCPATH		:= -I$(SDK_DIR) -I.. -I../json
 
 all:		$(EXAMPLE)
