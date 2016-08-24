@@ -30,6 +30,7 @@ OTHER_SOURCES	:= \
 		../json/json11/json11.cpp
 
 EMFLAGS		:= \
+		--memory-init-file 0 \
 		-s NO_FILESYSTEM=1 \
 		-s MODULARIZE=1 \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=1 \
