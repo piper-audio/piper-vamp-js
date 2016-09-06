@@ -61,6 +61,7 @@ all:		$(EXAMPLE)
 $(EXAMPLE):	$(EXAMPLE_SOURCES) $(ADAPTER_HEADERS) $(SDK_SOURCES)
 		$(CXX) $(CXXFLAGS) $(EMFLAGS) $(INCPATH) -o $(EXAMPLE) \
 		       $(EXAMPLE_SOURCES) $(SDK_SOURCES) $(EXAMPLE_LDFLAGS)
+		echo "module.exports=ExampleModule;" >> $(EXAMPLE)
 
 clean:
 		rm -f $(EXAMPLE) $(EXAMPLE).map
