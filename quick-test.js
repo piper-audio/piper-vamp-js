@@ -52,7 +52,7 @@ function test() {
     var result = request('{"type": "list"}');
 
     comment("Loading zero crossings plugin...");
-    result = request('{"type":"load","content": {"pluginKey":"vamp-example-plugins:zerocrossing","inputSampleRate":16,"adapterFlags":["AdaptAllSafe"]}}');
+    result = request('{"type":"load","content": {"pluginKey":"vamp-example-plugins:powerspectrum","inputSampleRate":16,"adapterFlags":["AdaptAllSafe"]}}');
 
     comment("I'm now assuming that the load succeeded and the returned pluginHandle was 1. I haven't bothered to parse the JSON. If those assumptions are wrong, this obviously isn't going to work. Configuring the plugin...");
     result = request('{"type":"configure","content":{"pluginHandle":1,"configuration":{"blockSize": 8, "channelCount": 1, "stepSize": 8}}}');

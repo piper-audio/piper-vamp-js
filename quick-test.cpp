@@ -4,7 +4,7 @@
 
 using namespace std;
 
-int main(int argc, char **argv)
+int main(int, char **)
 {
     string example = "./example.so";
     
@@ -35,9 +35,25 @@ int main(int argc, char **argv)
     cout << listResponse << endl;
     freeFn(listResponse);
 
-    string loadRequest = "{\"type\":\"load\",\"content\": {\"pluginKey\":\"vamp-example-plugins:zerocrossing\",\"inputSampleRate\":44100,\"adapterFlags\":[\"AdaptAllSafe\"]}}";
+    string loadRequest = "{\"type\":\"load\",\"content\": {\"pluginKey\":\"vamp-example-plugins:powerspectrum\",\"inputSampleRate\":44100,\"adapterFlags\":[\"AdaptAllSafe\"]}}";
     const char *loadResponse = reqFn(loadRequest.c_str());
     cout << loadResponse << endl;
     freeFn(loadResponse);
+
+    string configRequest = "{\"type\":\"configure\",\"content\":{\"pluginHandle\":1,\"configuration\":{\"blockSize\":8,\"channelCount\":1,\"stepSize\":8}}}";
+    const char *configResponse = reqFn(configRequest.c_str());
+    cout << configResponse << endl;
+    freeFn(configResponse);
+
+    string processRequest = "{\"type\":\"process\",\"content\":{\"pluginHandle\":1,\"processInput\":{\"timestamp\":{\"s\":0,\"n\":0},\"inputBuffers\":[{\"values\":[0,1,0,-1,0,1,0,-1]}]}}}";
+    const char *processResponse = reqFn(processRequest.c_str());
+    cout << processResponse << endl;
+    freeFn(processResponse);
+    
+    string finishRequest = "{\"type\":\"finish\",\"content\":{\"pluginHandle\":1}}";
+    const char *finishResponse = reqFn(finishRequest.c_str());
+    cout << finishResponse << endl;
+    freeFn(finishResponse);
+    
 }
 

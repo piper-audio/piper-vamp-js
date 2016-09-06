@@ -49,6 +49,7 @@ EXAMPLE_LDFLAGS	:= $(EMFLAGS)
 CXX		:= em++
 #OPTFLAGS	:= -g3
 OPTFLAGS	:= -O3
+#CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra -DSINGLE_PRECISION_FFT $(OPTFLAGS)
 CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(OPTFLAGS)
 INCPATH		:= -I$(SDK_DIR) -I.. -I../json
 
