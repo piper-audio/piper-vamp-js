@@ -65,7 +65,7 @@ public:
 private:
     std::string requestJsonImpl(std::string req);
 
-    RequestOrResponse readRequest(std::string req) const;
+    RequestOrResponse readRequest(std::string req);
     std::string writeResponse(const RequestOrResponse &resp) const;
 
     //!!! no type for this in RequestResponse.h in vamp sdk, should there be?
@@ -76,6 +76,7 @@ private:
 
     std::map<std::string, VamPipeAdapterBase *> m_adapters; // pluginKey -> adapter
     CountingPluginHandleMapper m_mapper;
+    bool m_useBase64;
 };
 
 }

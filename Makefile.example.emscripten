@@ -31,13 +31,13 @@ OTHER_SOURCES	:= \
 
 EMFLAGS		:= \
 		--memory-init-file 0 \
-		-s NO_FILESYSTEM=1 \
 		-s MODULARIZE=1 \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=1 \
 		-s DISABLE_EXCEPTION_CATCHING=0 \
 	    	-s EXPORT_NAME="'ExampleModule'" \
 	    	-s EXPORTED_FUNCTIONS="['_vampipeRequestJson','_vampipeFreeJson']"
 
+#		-s NO_FILESYSTEM=1 \
 # no longer exists?		-s NO_BROWSER=1 
 
 EXAMPLE_EXT	:= .js

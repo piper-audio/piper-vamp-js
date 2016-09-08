@@ -49,11 +49,15 @@ int main(int, char **)
     const char *processResponse = reqFn(processRequest.c_str());
     cout << processResponse << endl;
     freeFn(processResponse);
+
+    string b64processRequest = "{\"type\":\"process\",\"content\":{\"pluginHandle\":1,\"processInput\":{\"timestamp\":{\"s\":0,\"n\":0},\"inputBuffers\":[{\"b64values\":\"AAAAAAAAgD8AAAAAAACAvwAAAAAAAIA/AAAAAAAAgL8\"}]}}}";
+    const char *b64processResponse = reqFn(b64processRequest.c_str());
+    cout << b64processResponse << endl;
+    freeFn(b64processResponse);
     
     string finishRequest = "{\"type\":\"finish\",\"content\":{\"pluginHandle\":1}}";
     const char *finishResponse = reqFn(finishRequest.c_str());
     cout << finishResponse << endl;
     freeFn(finishResponse);
-    
 }
 

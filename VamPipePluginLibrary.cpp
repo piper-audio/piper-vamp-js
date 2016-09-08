@@ -64,7 +64,8 @@ convertRequestJson(string input)
     return j;
 }
 
-VamPipePluginLibrary::VamPipePluginLibrary(vector<VamPipeAdapterBase *> pp)
+VamPipePluginLibrary::VamPipePluginLibrary(vector<VamPipeAdapterBase *> pp) :
+    m_useBase64(false)
 {
     for (VamPipeAdapterBase *p: pp) {
 	string key = p->getStaticData().pluginKey;
@@ -73,7 +74,7 @@ VamPipePluginLibrary::VamPipePluginLibrary(vector<VamPipeAdapterBase *> pp)
 }
 
 RequestOrResponse
-VamPipePluginLibrary::readRequest(string req) const
+VamPipePluginLibrary::readRequest(string req)
 {
     RequestOrResponse rr;
     rr.direction = RequestOrResponse::Request;
@@ -82,6 +83,7 @@ VamPipePluginLibrary::readRequest(string req) const
 
     //!!! reduce, reduce
     rr.type = VampJson::getRequestResponseType(j);
+    VampJson::BufferSerialisation serialisation = VampJson::BufferSerialisation::Text;
 
     switch (rr.type) {
 
@@ -95,7 +97,7 @@ VamPipePluginLibrary::readRequest(string req) const
 	rr.configurationRequest = VampJson::toVampRequest_Configure(j, m_mapper);
 	break;
     case RRType::Process:
-	rr.processRequest = VampJson::toVampRequest_Process(j, m_mapper);
+	rr.processRequest = VampJson::toVampRequest_Process(j, m_mapper, serialisation);
 	break;
     case RRType::Finish:
 	rr.finishPlugin = VampJson::toVampRequest_Finish(j, m_mapper);
@@ -104,6 +106,10 @@ VamPipePluginLibrary::readRequest(string req) const
 	break;
     }
 
+    if (serialisation == VampJson::BufferSerialisation::Base64) {
+        m_useBase64 = true;
+    }
+    
     return rr;
 }
 
@@ -111,6 +117,11 @@ string
 VamPipePluginLibrary::writeResponse(const RequestOrResponse &rr) const
 {
     Json j;
+
+    VampJson::BufferSerialisation serialisation =
+        (m_useBase64 ?
+         VampJson::BufferSerialisation::Base64 :
+         VampJson::BufferSerialisation::Text);
 
     switch (rr.type) {
 
@@ -124,10 +135,10 @@ VamPipePluginLibrary::writeResponse(const RequestOrResponse &rr) const
 	j = VampJson::fromVampResponse_Configure(rr.configurationResponse);
 	break;
     case RRType::Process:
-	j = VampJson::fromVampResponse_Process(rr.processResponse);
+	j = VampJson::fromVampResponse_Process(rr.processResponse, serialisation);
 	break;
     case RRType::Finish:
-	j = VampJson::fromVampResponse_Finish(rr.finishResponse);
+	j = VampJson::fromVampResponse_Finish(rr.finishResponse, serialisation);
 	break;
     case RRType::NotValid:
 	break;
@@ -189,6 +200,7 @@ VamPipePluginLibrary::requestJsonImpl(string req)
     try {
 	request = readRequest(req);
     } catch (const std::exception &e) {
+        std::cerr << "FAILURE" << std::endl;
 	return VampJson::fromException(e, RRType::NotValid).dump();
     }
 
@@ -253,7 +265,7 @@ VamPipePluginLibrary::requestJsonImpl(string req)
 	    }
 
 	    response.processResponse.features =
-		preq.plugin->process(fbuffers, preq.timestamp);
+                preq.plugin->process(fbuffers, preq.timestamp);
 	    response.success = true;
 
 	    delete[] fbuffers;
