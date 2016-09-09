@@ -193,6 +193,36 @@ VamPipePluginLibrary::configurePlugin(Vamp::HostExt::ConfigurationRequest req) c
 }
 
 string
+VamPipePluginLibrary::processImpl(int pluginHandle,
+                                  const float *const *inputBuffers,
+                                  int sec,
+                                  int nsec)
+{
+    RequestOrResponse response;
+    response.direction = RequestOrResponse::Response;
+    response.type = RRType::Process;
+
+    try {
+        if (!m_mapper.isConfigured(pluginHandle)) {
+            throw runtime_error("plugin has not been configured");
+        }
+
+        Vamp::Plugin *plugin = m_mapper.handleToPlugin(pluginHandle);
+        Vamp::RealTime timestamp(sec, nsec);
+        
+        response.processResponse.features = plugin->process(inputBuffers, timestamp);
+        response.success = true;
+        
+	return writeResponse(response);
+
+    } catch (const std::exception &e) {
+	return VampJson::fromException(e, RRType::Process).dump();
+    }
+
+    m_useBase64 = true; //!!! todo: return something raw as well!
+}
+
+string
 VamPipePluginLibrary::requestJsonImpl(string req)
 {
     RequestOrResponse request;
@@ -200,7 +230,6 @@ VamPipePluginLibrary::requestJsonImpl(string req)
     try {
 	request = readRequest(req);
     } catch (const std::exception &e) {
-        std::cerr << "FAILURE" << std::endl;
 	return VampJson::fromException(e, RRType::NotValid).dump();
     }
 
@@ -254,7 +283,7 @@ VamPipePluginLibrary::requestJsonImpl(string req)
 	    if (channels != m_mapper.getChannelCount(h)) {
 		throw runtime_error("wrong number of channels supplied to process");
 	    }
-		
+
 	    const float **fbuffers = new const float *[channels];
 	    for (int i = 0; i < channels; ++i) {
 		if (int(preq.inputBuffers[i].size()) != m_mapper.getBlockSize(h)) {
