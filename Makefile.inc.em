@@ -32,7 +32,8 @@ EMFLAGS		:= \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=1 \
 		-s DISABLE_EXCEPTION_CATCHING=0 \
 	    	-s EXPORT_NAME="'$(MODULE_SYMBOL)'" \
-	    	-s EXPORTED_FUNCTIONS="['_vampipeRequestJson','_vampipeProcessRaw','_vampipeFreeJson']"
+	    	-s EXPORTED_FUNCTIONS="['_vampipeRequestJson','_vampipeProcessRaw','_vampipeFreeJson']" \
+		$(EMFLAGS)
 
 SOURCES		:= $(MODULE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(OTHER_SOURCES)
 LDFLAGS		:= $(EMFLAGS)
