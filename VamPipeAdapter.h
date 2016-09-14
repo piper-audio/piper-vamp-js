@@ -45,30 +45,35 @@
 
 namespace vampipe {
 
-class VamPipeAdapterBase
+class VamPipeAdapterInterface
 {
 public:
     virtual Vamp::HostExt::PluginStaticData getStaticData() const = 0;
     virtual Vamp::HostExt::LoadResponse loadPlugin(Vamp::HostExt::LoadRequest r) const = 0;
+    virtual Vamp::Plugin *createPlugin(float inputSampleRate) const = 0;
 };
 
 template <typename P>
-class VamPipeAdapter : public VamPipeAdapterBase
+class VamPipeAdapterBase : public VamPipeAdapterInterface
 {
     const int adaptInputDomain = 0x01;
     const int adaptChannelCount = 0x02;
     const int adaptBufferSize = 0x04;
+
+protected:
+    VamPipeAdapterBase(std::string libname) : m_soname(libname) { }
     
 public:
-    VamPipeAdapter(std::string libname) :
-	m_soname(libname) { }
+    virtual Vamp::Plugin *createPlugin(float inputSampleRate) const = 0;
     
     virtual Vamp::HostExt::PluginStaticData getStaticData() const {
-	P p(44100.f);
-	return Vamp::HostExt::PluginStaticData::fromPlugin
-	    (m_soname + ":" + p.getIdentifier(),
+        Vamp::Plugin *p = createPlugin(44100.f);
+	auto data = Vamp::HostExt::PluginStaticData::fromPlugin
+	    (m_soname + ":" + p->getIdentifier(),
 	     {}, //!!! todo: category - tricky one that
-	     &p);
+	     p);
+        delete p;
+        return data;
     }
 
     virtual Vamp::HostExt::LoadResponse loadPlugin(Vamp::HostExt::
@@ -78,7 +83,7 @@ public:
 	// the correct plugin (so we don't have to check the plugin
 	// key field here)
 
-	Vamp::Plugin *p = new P(r.inputSampleRate);
+	Vamp::Plugin *p = createPlugin(r.inputSampleRate);
 	
 	if (r.adapterFlags & adaptInputDomain) {
 	    if (p->getInputDomain() == Vamp::Plugin::FrequencyDomain) {
@@ -118,6 +123,17 @@ public:
     
 private:
     std::string m_soname;
+};
+
+template <typename P>
+class VamPipeAdapter : public VamPipeAdapterBase<P>
+{
+public:
+    VamPipeAdapter(std::string libname) : VamPipeAdapterBase<P>(libname) { }
+    
+    virtual Vamp::Plugin *createPlugin(float inputSampleRate) const {
+        return new P(inputSampleRate);
+    }
 };
 
 }

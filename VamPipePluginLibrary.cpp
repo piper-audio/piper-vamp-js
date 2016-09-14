@@ -64,10 +64,10 @@ convertRequestJson(string input)
     return j;
 }
 
-VamPipePluginLibrary::VamPipePluginLibrary(vector<VamPipeAdapterBase *> pp) :
+VamPipePluginLibrary::VamPipePluginLibrary(vector<VamPipeAdapterInterface *> pp) :
     m_useBase64(false)
 {
-    for (VamPipeAdapterBase *p: pp) {
+    for (VamPipeAdapterInterface *p: pp) {
 	string key = p->getStaticData().pluginKey;
 	m_adapters[key] = p;
     }

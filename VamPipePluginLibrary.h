@@ -47,12 +47,12 @@
 
 namespace vampipe {
 
-class VamPipeAdapterBase;
+class VamPipeAdapterInterface;
 
 class VamPipePluginLibrary
 {
 public:
-    VamPipePluginLibrary(std::vector<VamPipeAdapterBase *> pp);
+    VamPipePluginLibrary(std::vector<VamPipeAdapterInterface *> pp);
     
     const char *requestJson(const char *request) {
 	return strdup(requestJsonImpl(request).c_str());
@@ -80,7 +80,7 @@ private:
     Vamp::HostExt::ConfigurationResponse configurePlugin(Vamp::HostExt::
 							 ConfigurationRequest r) const;
 
-    std::map<std::string, VamPipeAdapterBase *> m_adapters; // pluginKey -> adapter
+    std::map<std::string, VamPipeAdapterInterface *> m_adapters; // pluginKey -> adapter
     CountingPluginHandleMapper m_mapper;
     bool m_useBase64;
 };
