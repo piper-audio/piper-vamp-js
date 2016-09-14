@@ -58,12 +58,18 @@ public:
 	return strdup(requestJsonImpl(request).c_str());
     }
 
+    const char *processRaw(int handle, const float *const *inputBuffers,
+                           int sec, int nsec) {
+        return strdup(processRawImpl(handle, inputBuffers, sec, nsec).c_str());
+    }
+    
     void freeJson(const char *json) {
 	free(const_cast<char *>(json));
     }
     
 private:
     std::string requestJsonImpl(std::string req);
+    std::string processRawImpl(int, const float *const *, int, int);
 
     RequestOrResponse readRequest(std::string req);
     std::string writeResponse(const RequestOrResponse &resp) const;

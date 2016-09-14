@@ -4,14 +4,6 @@ ADAPTER_SOURCES	:= VamPipePluginLibrary.cpp
 
 SDK_DIR		:= ../vamp-plugin-sdk
 
-PLUGIN_SOURCES	:= \
-		$(SDK_DIR)/examples/ZeroCrossing.cpp \
-		$(SDK_DIR)/examples/SpectralCentroid.cpp \
-		$(SDK_DIR)/examples/PercussionOnsetDetector.cpp \
-		$(SDK_DIR)/examples/FixedTempoEstimator.cpp \
-		$(SDK_DIR)/examples/AmplitudeFollower.cpp \
-		$(SDK_DIR)/examples/PowerSpectrum.cpp
-
 SDK_SOURCES	:= \
         	$(SDK_DIR)/src/vamp-hostsdk/PluginBufferingAdapter.cpp \
 		$(SDK_DIR)/src/vamp-hostsdk/PluginChannelAdapter.cpp \
@@ -29,40 +21,39 @@ SDK_SOURCES	:= \
 OTHER_SOURCES	:= \
 		../json/json11/json11.cpp
 
+MODULE_EXT	:= .js
+MODULE		:= $(MODULE_NAME)$(MODULE_EXT)
+MODULE_SYMBOL	:= $(MODULE_NAME)Module
+
 EMFLAGS		:= \
 		--memory-init-file 0 \
 		-s MODULARIZE=1 \
+		-s NO_FILESYSTEM=1 \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=1 \
 		-s DISABLE_EXCEPTION_CATCHING=0 \
-	    	-s EXPORT_NAME="'ExampleModule'" \
-	    	-s EXPORTED_FUNCTIONS="['_vampipeRequestJson','_vampipeFreeJson']"
+	    	-s EXPORT_NAME="'$(MODULE_SYMBOL)'" \
+	    	-s EXPORTED_FUNCTIONS="['_vampipeRequestJson','_vampipeProcessRaw','_vampipeFreeJson']"
 
-#		-s NO_FILESYSTEM=1 \
-# no longer exists?		-s NO_BROWSER=1 
-
-EXAMPLE_EXT	:= .js
-EXAMPLE		:= example$(EXAMPLE_EXT)
-EXAMPLE_SOURCE	:= example.cpp
-EXAMPLE_SOURCES	:= $(EXAMPLE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(OTHER_SOURCES)
-EXAMPLE_LDFLAGS	:= $(EMFLAGS)
+SOURCES		:= $(MODULE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(OTHER_SOURCES)
+LDFLAGS		:= $(EMFLAGS)
 
 CXX		:= em++
 
 #OPTFLAGS	:= -g3
 OPTFLAGS	:= -O3 -ffast-math
 
-DEFINES		:= -DSINGLE_PRECISION_FFT
+DEFINES		:= -DSINGLE_PRECISION_FFT $(DEFINES)
 
 CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS)
 
-INCPATH		:= -I$(SDK_DIR) -I.. -I../json
+INCPATH		:= -I$(SDK_DIR) -I.. -I../json $(INCPATH)
 
-all:		$(EXAMPLE)
+all:		$(MODULE)
 
-$(EXAMPLE):	$(EXAMPLE_SOURCES) $(ADAPTER_HEADERS) $(SDK_SOURCES)
-		$(CXX) $(CXXFLAGS) $(EMFLAGS) $(INCPATH) -o $(EXAMPLE) \
-		       $(EXAMPLE_SOURCES) $(SDK_SOURCES) $(EXAMPLE_LDFLAGS) && \
-		( echo "module.exports=ExampleModule;" >> $(EXAMPLE) )
+$(MODULE):	$(SOURCES) $(ADAPTER_HEADERS) $(SDK_SOURCES)
+		$(CXX) $(CXXFLAGS) $(EMFLAGS) $(INCPATH) -o $(MODULE) \
+		       $(SOURCES) $(SDK_SOURCES) $(MODULE_LDFLAGS) && \
+		( echo "module.exports=$(MODULE_SYMBOL);" >> $(MODULE) )
 
 clean:
-		rm -f $(EXAMPLE) $(EXAMPLE).map
+		rm -f $(MODULE)

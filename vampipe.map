@@ -1,4 +1,4 @@
 {
-	global: vampipeRequestJson; vampipeFreeJson;
+	global: vampipeRequestJson; vampipeProcessRaw; vampipeFreeJson;
 	local: *;
 };

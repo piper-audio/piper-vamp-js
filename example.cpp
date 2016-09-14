@@ -69,6 +69,13 @@ const char *vampipeRequestJson(const char *request) {
     return library.requestJson(request);
 }
 
+const char *vampipeProcessRaw(int pluginHandle,
+                              const float *const *inputBuffers,
+                              int sec,
+                              int nsec) {
+    return library.processRaw(pluginHandle, inputBuffers, sec, nsec);
+}
+    
 void vampipeFreeJson(const char *json) {
     return library.freeJson(json);
 }
