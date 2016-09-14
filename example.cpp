@@ -69,13 +69,11 @@ const char *vampipeRequestJson(const char *request) {
     return library.requestJson(request);
 }
 
-    //!!! naming problem -- returns json as well, it's just that
-    //!!! unlike the others, it doesn't take json as input
-const char *vampipeProcess(int pluginHandle,
-                           const float *const *inputBuffers,
-                           int sec,
-                           int nsec) {
-    return library.process(pluginHandle, inputBuffers, sec, nsec);
+const char *vampipeProcessRaw(int pluginHandle,
+                              const float *const *inputBuffers,
+                              int sec,
+                              int nsec) {
+    return library.processRaw(pluginHandle, inputBuffers, sec, nsec);
 }
     
 void vampipeFreeJson(const char *json) {

@@ -193,10 +193,10 @@ VamPipePluginLibrary::configurePlugin(Vamp::HostExt::ConfigurationRequest req) c
 }
 
 string
-VamPipePluginLibrary::processImpl(int pluginHandle,
-                                  const float *const *inputBuffers,
-                                  int sec,
-                                  int nsec)
+VamPipePluginLibrary::processRawImpl(int pluginHandle,
+                                     const float *const *inputBuffers,
+                                     int sec,
+                                     int nsec)
 {
     RequestOrResponse response;
     response.direction = RequestOrResponse::Response;
@@ -212,14 +212,14 @@ VamPipePluginLibrary::processImpl(int pluginHandle,
         
         response.processResponse.features = plugin->process(inputBuffers, timestamp);
         response.success = true;
+
+        m_useBase64 = true;
         
 	return writeResponse(response);
 
     } catch (const std::exception &e) {
 	return VampJson::fromException(e, RRType::Process).dump();
     }
-
-    m_useBase64 = true; //!!! todo: return something raw as well!
 }
 
 string
