@@ -54,7 +54,7 @@ all:		$(MODULE)
 $(MODULE):	$(SOURCES) $(ADAPTER_HEADERS) $(SDK_SOURCES)
 		$(CXX) $(CXXFLAGS) $(EMFLAGS) $(INCPATH) -o $(MODULE) \
 		       $(SOURCES) $(SDK_SOURCES) $(MODULE_LDFLAGS) && \
-		( echo "module.exports=$(MODULE_SYMBOL);" >> $(MODULE) )
+		( echo "if (typeof process === 'object') module.exports=$(MODULE_SYMBOL);" >> $(MODULE) )
 
 clean:
 		rm -f $(MODULE)
