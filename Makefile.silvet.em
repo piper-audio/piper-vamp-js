@@ -12,6 +12,8 @@ FD_DIR	     	:= $(SILVET_DIR)/flattendynamics
 
 INCPATH		:= -I$(SRC_DIR) -I$(CQ_DIR) -I$(CQ_DIR)/cq -I$(KFFT_DIR) -I$(KFFT_DIR)/tools -I$(SILVET_DIR) -I$(FD_DIR) -I$(BQVEC_DIR)
 
+EMFLAGS		:= -s TOTAL_MEMORY=100000000
+
 DEFINES		:= -Dkiss_fft_scalar=double
  
 PLUGIN_SOURCES 	:= \
