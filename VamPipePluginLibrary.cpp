@@ -73,90 +73,6 @@ VamPipePluginLibrary::VamPipePluginLibrary(vector<VamPipeAdapterInterface *> pp)
     }
 }
 
-RequestOrResponse
-VamPipePluginLibrary::readRequest(string req)
-{
-    RequestOrResponse rr;
-    rr.direction = RequestOrResponse::Request;
-
-    Json j = convertRequestJson(req);
-
-    //!!! reduce, reduce
-    rr.type = VampJson::getRequestResponseType(j);
-    VampJson::BufferSerialisation serialisation = VampJson::BufferSerialisation::Text;
-
-    switch (rr.type) {
-
-    case RRType::List:
-	VampJson::toVampRequest_List(j); // type check only
-	break;
-    case RRType::Load:
-	rr.loadRequest = VampJson::toVampRequest_Load(j);
-	break;
-    case RRType::Configure:
-	rr.configurationRequest = VampJson::toVampRequest_Configure(j, m_mapper);
-	break;
-    case RRType::Process:
-	rr.processRequest = VampJson::toVampRequest_Process(j, m_mapper, serialisation);
-	break;
-    case RRType::Finish:
-	rr.finishRequest = VampJson::toVampRequest_Finish(j, m_mapper);
-	break;
-    case RRType::NotValid:
-	break;
-    }
-
-    if (serialisation == VampJson::BufferSerialisation::Base64) {
-        m_useBase64 = true;
-    }
-    
-    return rr;
-}
-
-string
-VamPipePluginLibrary::writeResponse(const RequestOrResponse &rr) const
-{
-    Json j;
-
-    VampJson::BufferSerialisation serialisation =
-        (m_useBase64 ?
-         VampJson::BufferSerialisation::Base64 :
-         VampJson::BufferSerialisation::Text);
-
-    if (!rr.success) {
-
-	j = VampJson::fromError(rr.errorText, rr.type);
-
-    } else {
-    
-        switch (rr.type) {
-
-        case RRType::List:
-            j = VampJson::fromVampResponse_List(rr.listResponse);
-            break;
-        case RRType::Load:
-            j = VampJson::fromVampResponse_Load(rr.loadResponse, m_mapper);
-            break;
-        case RRType::Configure:
-            j = VampJson::fromVampResponse_Configure(rr.configurationResponse,
-                                                     m_mapper);
-            break;
-        case RRType::Process:
-            j = VampJson::fromVampResponse_Process
-                (rr.processResponse, m_mapper, serialisation);
-            break;
-        case RRType::Finish:
-            j = VampJson::fromVampResponse_Finish
-                (rr.finishResponse, m_mapper, serialisation);
-            break;
-        case RRType::NotValid:
-            break;
-        }
-    }
-
-    return j.dump();
-}
-
 Vamp::HostExt::ListResponse
 VamPipePluginLibrary::listPluginData() const
 {
@@ -210,10 +126,6 @@ VamPipePluginLibrary::processRawImpl(int pluginHandle,
                                      int sec,
                                      int nsec)
 {
-    RequestOrResponse response;
-    response.direction = RequestOrResponse::Response;
-    response.type = RRType::Process;
-
     try {
         if (!m_mapper.isConfigured(pluginHandle)) {
             throw runtime_error("plugin has not been configured");
@@ -222,130 +134,148 @@ VamPipePluginLibrary::processRawImpl(int pluginHandle,
         Vamp::Plugin *plugin = m_mapper.handleToPlugin(pluginHandle);
         Vamp::RealTime timestamp(sec, nsec);
 
-        response.processResponse.plugin = plugin;
-        response.processResponse.features = plugin->process(inputBuffers, timestamp);
-        response.success = true;
-
-        m_useBase64 = true;
+        Vamp::HostExt::ProcessResponse resp;
+        resp.plugin = plugin;
+        resp.features = plugin->process(inputBuffers, timestamp);
         
-	return writeResponse(response);
+        m_useBase64 = true;
+
+        return VampJson::fromVampResponse_Process
+            (resp, m_mapper,
+             VampJson::BufferSerialisation::Base64)
+            .dump();
 
     } catch (const std::exception &e) {
-	return VampJson::fromException(e, RRType::Process).dump();
+	return VampJson::fromException(e, RRType::Process)
+            .dump();
     }
 }
 
 string
 VamPipePluginLibrary::requestJsonImpl(string req)
 {
-    RequestOrResponse request;
+    Json j = convertRequestJson(req);
 
+    RRType type;
     try {
-	request = readRequest(req);
+        type = VampJson::getRequestResponseType(j);
     } catch (const std::exception &e) {
-	return VampJson::fromException(e, RRType::NotValid).dump();
+	return VampJson::fromException(e, RRType::NotValid)
+            .dump();
     }
 
-    RequestOrResponse response;
-    response.direction = RequestOrResponse::Response;
-    response.type = request.type;
+    VampJson::BufferSerialisation serialisation =
+        (m_useBase64 ?
+         VampJson::BufferSerialisation::Base64 :
+         VampJson::BufferSerialisation::Text);
 
-    try {
-	switch (request.type) {
-
-	case RRType::List:
-	    response.listResponse = listPluginData();
-	    response.success = true;
-	    break;
-
-	case RRType::Load:
-	    response.loadResponse = loadPlugin(request.loadRequest);
-	    if (response.loadResponse.plugin) {
-		m_mapper.addPlugin(response.loadResponse.plugin);
-		response.success = true;
-	    }
-	    break;
-	
-	case RRType::Configure:
-	{
-	    auto &creq = request.configurationRequest;
-	    auto h = m_mapper.pluginToHandle(creq.plugin);
-	    if (m_mapper.isConfigured(h)) {
-		throw runtime_error("plugin has already been configured");
-	    }
-
-	    response.configurationResponse = configurePlugin(creq);
-	
-	    if (!response.configurationResponse.outputs.empty()) {
-		m_mapper.markConfigured
-		    (h, creq.configuration.channelCount, creq.configuration.blockSize);
-		response.success = true;
-	    }
-	    break;
-	}
-
-	case RRType::Process:
-	{
-	    auto &preq = request.processRequest;
-	    auto h = m_mapper.pluginToHandle(preq.plugin);
-	    if (!m_mapper.isConfigured(h)) {
-		throw runtime_error("plugin has not been configured");
-	    }
-
-	    int channels = int(preq.inputBuffers.size());
-	    if (channels != m_mapper.getChannelCount(h)) {
-		throw runtime_error("wrong number of channels supplied to process");
-	    }
-
-	    const float **fbuffers = new const float *[channels];
-	    for (int i = 0; i < channels; ++i) {
-		if (int(preq.inputBuffers[i].size()) != m_mapper.getBlockSize(h)) {
-		    delete[] fbuffers;
-		    throw runtime_error("wrong block size supplied to process");
-		}
-		fbuffers[i] = preq.inputBuffers[i].data();
-	    }
-
-            response.processResponse.plugin = preq.plugin;
-	    response.processResponse.features =
-                preq.plugin->process(fbuffers, preq.timestamp);
-	    response.success = true;
-
-	    delete[] fbuffers;
-	    break;
-	}
-
-	case RRType::Finish:
-	{
-            response.finishResponse.plugin = request.finishRequest.plugin;
-	    response.finishResponse.features =
-		request.finishRequest.plugin->getRemainingFeatures();
-	    
-            // We do not delete the plugin here -- we need it in the
-            // mapper when converting the features. It gets deleted
-            // below, after the writeResponse() call.
-	
-	    response.success = true;
-	    break;
-	}
-
-	case RRType::NotValid:
-	    break;
-	}
+    Json rj;
     
-	string rstr = writeResponse(response);
+    try {
+        switch (type) {
 
-        if (request.type == RRType::Finish) {
-            auto h = m_mapper.pluginToHandle(request.finishRequest.plugin);
-            m_mapper.removePlugin(h);
-            delete request.finishRequest.plugin;
+        case RRType::List:
+            rj = VampJson::fromVampResponse_List(listPluginData());
+            break;
+
+        case RRType::Load:
+        {
+            auto req = VampJson::toVampRequest_Load(j);
+            auto resp = loadPlugin(req);
+            if (resp.plugin) {
+                m_mapper.addPlugin(resp.plugin);
+            }
+            rj = VampJson::fromVampResponse_Load(resp, m_mapper);
+            break;
         }
 
-        return rstr;
+        case RRType::Configure:
+        {
+            auto req = VampJson::toVampRequest_Configure(j, m_mapper);
+            auto h = m_mapper.pluginToHandle(req.plugin);
+            if (m_mapper.isConfigured(h)) {
+                throw runtime_error("plugin has already been configured");
+            }
 
+            auto resp = configurePlugin(req);
+            if (!resp.outputs.empty()) {
+                m_mapper.markConfigured(h,
+                                        req.configuration.channelCount,
+                                        req.configuration.blockSize);
+            }
+
+            rj = VampJson::fromVampResponse_Configure(resp, m_mapper);
+            break;
+        }
+
+        case RRType::Process:
+        {
+            VampJson::BufferSerialisation serialisation;
+            
+            auto req = VampJson::toVampRequest_Process(j, m_mapper,
+                                                       serialisation);
+
+            auto h = m_mapper.pluginToHandle(req.plugin);
+            if (!m_mapper.isConfigured(h)) {
+                throw runtime_error("plugin has not been configured");
+            }
+
+            int channels = int(req.inputBuffers.size());
+            if (channels != m_mapper.getChannelCount(h)) {
+                throw runtime_error("wrong number of channels supplied to process");
+            }
+
+            if (serialisation == VampJson::BufferSerialisation::Base64) {
+                m_useBase64 = true;
+            }
+            
+            const float **fbuffers = new const float *[channels];
+            for (int i = 0; i < channels; ++i) {
+                if (int(req.inputBuffers[i].size()) != m_mapper.getBlockSize(h)) {
+                    delete[] fbuffers;
+                    throw runtime_error("wrong block size supplied to process");
+                }
+                fbuffers[i] = req.inputBuffers[i].data();
+            }
+
+            Vamp::HostExt::ProcessResponse resp;
+            resp.plugin = req.plugin;
+            resp.features = req.plugin->process(fbuffers, req.timestamp);
+            delete[] fbuffers;
+
+            rj = VampJson::fromVampResponse_Process(resp, m_mapper, serialisation);
+            break;
+        }
+
+        case RRType::Finish:
+        {
+            auto req = VampJson::toVampRequest_Finish(j, m_mapper);
+            auto h = m_mapper.pluginToHandle(req.plugin);
+            if (!m_mapper.isConfigured(h)) {
+                throw runtime_error("plugin has not been configured");
+            }
+
+            Vamp::HostExt::ProcessResponse resp;
+            resp.plugin = req.plugin;
+            resp.features = req.plugin->getRemainingFeatures();
+
+            rj = VampJson::fromVampResponse_Finish(resp, m_mapper, serialisation);
+	
+            m_mapper.removePlugin(h);
+            delete req.plugin;
+            break;
+        }
+
+        case RRType::NotValid:
+            rj = VampJson::fromError("invalid request", type);
+            break;
+        }
+        
     } catch (const std::exception &e) {
-	return VampJson::fromException(e, request.type).dump();
+        rj = VampJson::fromException(e, type);
     }
+
+    return rj.dump();
 }
 
 }

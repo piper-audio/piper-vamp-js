@@ -36,7 +36,6 @@
 #define VAMPIPE_PLUGIN_LIBRARY_H
 
 #include "bits/CountingPluginHandleMapper.h"
-#include "bits/RequestOrResponse.h"
 
 #include <vamp-hostsdk/PluginStaticData.h>
 #include <vamp-hostsdk/RequestResponse.h>
@@ -70,9 +69,6 @@ public:
 private:
     std::string requestJsonImpl(std::string req);
     std::string processRawImpl(int, const float *const *, int, int);
-
-    RequestOrResponse readRequest(std::string req);
-    std::string writeResponse(const RequestOrResponse &resp) const;
 
     Vamp::HostExt::ListResponse listPluginData() const;
     Vamp::HostExt::LoadResponse loadPlugin(Vamp::HostExt::LoadRequest r) const;
