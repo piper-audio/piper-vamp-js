@@ -193,6 +193,8 @@ VamPipePluginLibrary::configurePlugin(Vamp::HostExt::ConfigurationRequest req) c
 
     Vamp::HostExt::ConfigurationResponse response;
 
+    response.plugin = req.plugin;
+
     if (req.plugin->initialise(req.configuration.channelCount,
                                req.configuration.stepSize,
                                req.configuration.blockSize)) {
