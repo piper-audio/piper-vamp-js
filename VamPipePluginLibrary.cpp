@@ -157,14 +157,14 @@ VamPipePluginLibrary::writeResponse(const RequestOrResponse &rr) const
     return j.dump();
 }
 
-vector<Vamp::HostExt::PluginStaticData>
+Vamp::HostExt::ListResponse
 VamPipePluginLibrary::listPluginData() const
 {
-    vector<Vamp::HostExt::PluginStaticData> data;
+    Vamp::HostExt::ListResponse resp;
     for (auto a: m_adapters) {
-	data.push_back(a.second->getStaticData());
+	resp.pluginData.push_back(a.second->getStaticData());
     }
-    return data;
+    return resp;
 }
 
 Vamp::HostExt::LoadResponse
