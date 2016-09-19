@@ -100,7 +100,7 @@ VamPipePluginLibrary::readRequest(string req)
 	rr.processRequest = VampJson::toVampRequest_Process(j, m_mapper, serialisation);
 	break;
     case RRType::Finish:
-	rr.finishPlugin = VampJson::toVampRequest_Finish(j, m_mapper);
+	rr.finishRequest = VampJson::toVampRequest_Finish(j, m_mapper);
 	break;
     case RRType::NotValid:
 	break;
@@ -138,7 +138,8 @@ VamPipePluginLibrary::writeResponse(const RequestOrResponse &rr) const
             j = VampJson::fromVampResponse_Load(rr.loadResponse, m_mapper);
             break;
         case RRType::Configure:
-            j = VampJson::fromVampResponse_Configure(rr.configurationResponse);
+            j = VampJson::fromVampResponse_Configure(rr.configurationResponse,
+                                                     m_mapper);
             break;
         case RRType::Process:
             j = VampJson::fromVampResponse_Process
@@ -314,9 +315,9 @@ VamPipePluginLibrary::requestJsonImpl(string req)
 
 	case RRType::Finish:
 	{
-            response.finishResponse.plugin = request.finishPlugin;
+            response.finishResponse.plugin = request.finishRequest.plugin;
 	    response.finishResponse.features =
-		request.finishPlugin->getRemainingFeatures();
+		request.finishRequest.plugin->getRemainingFeatures();
 	    
             // We do not delete the plugin here -- we need it in the
             // mapper when converting the features. It gets deleted
@@ -333,9 +334,9 @@ VamPipePluginLibrary::requestJsonImpl(string req)
 	string rstr = writeResponse(response);
 
         if (request.type == RRType::Finish) {
-            auto h = m_mapper.pluginToHandle(request.finishPlugin);
+            auto h = m_mapper.pluginToHandle(request.finishRequest.plugin);
             m_mapper.removePlugin(h);
-            delete request.finishPlugin;
+            delete request.finishRequest.plugin;
         }
 
         return rstr;
