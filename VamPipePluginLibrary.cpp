@@ -132,7 +132,7 @@ VamPipePluginLibrary::writeResponse(const RequestOrResponse &rr) const
         switch (rr.type) {
 
         case RRType::List:
-            j = VampJson::fromVampResponse_List("", rr.listResponse);
+            j = VampJson::fromVampResponse_List(rr.listResponse);
             break;
         case RRType::Load:
             j = VampJson::fromVampResponse_Load(rr.loadResponse, m_mapper);

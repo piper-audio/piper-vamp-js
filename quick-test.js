@@ -1,6 +1,6 @@
 "use strict";
 
-var exampleModule = ExampleModule();
+var exampleModule = VampExamplePluginsModule();
 
 // It is possible to declare both parameters and return values as
 // "string", in which case Emscripten will take care of
