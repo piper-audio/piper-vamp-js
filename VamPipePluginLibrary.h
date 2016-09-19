@@ -74,13 +74,14 @@ private:
     RequestOrResponse readRequest(std::string req);
     std::string writeResponse(const RequestOrResponse &resp) const;
 
-    //!!! no type for this in RequestResponse.h in vamp sdk, should there be?
-    std::vector<Vamp::HostExt::PluginStaticData> listPluginData() const;
+    Vamp::HostExt::ListResponse listPluginData() const;
     Vamp::HostExt::LoadResponse loadPlugin(Vamp::HostExt::LoadRequest r) const;
     Vamp::HostExt::ConfigurationResponse configurePlugin(Vamp::HostExt::
-							 ConfigurationRequest r) const;
+							 ConfigurationRequest r)
+        const;
 
-    std::map<std::string, VamPipeAdapterInterface *> m_adapters; // pluginKey -> adapter
+    // map from pluginKey -> adapter
+    std::map<std::string, VamPipeAdapterInterface *> m_adapters;
     CountingPluginHandleMapper m_mapper;
     bool m_useBase64;
 };

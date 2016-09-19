@@ -100,7 +100,7 @@ VamPipePluginLibrary::readRequest(string req)
 	rr.processRequest = VampJson::toVampRequest_Process(j, m_mapper, serialisation);
 	break;
     case RRType::Finish:
-	rr.finishPlugin = VampJson::toVampRequest_Finish(j, m_mapper);
+	rr.finishRequest = VampJson::toVampRequest_Finish(j, m_mapper);
 	break;
     case RRType::NotValid:
 	break;
@@ -123,38 +123,48 @@ VamPipePluginLibrary::writeResponse(const RequestOrResponse &rr) const
          VampJson::BufferSerialisation::Base64 :
          VampJson::BufferSerialisation::Text);
 
-    switch (rr.type) {
+    if (!rr.success) {
 
-    case RRType::List:
-	j = VampJson::fromVampResponse_List("", rr.listResponse);
-	break;
-    case RRType::Load:
-	j = VampJson::fromVampResponse_Load(rr.loadResponse, m_mapper);
-	break;
-    case RRType::Configure:
-	j = VampJson::fromVampResponse_Configure(rr.configurationResponse);
-	break;
-    case RRType::Process:
-	j = VampJson::fromVampResponse_Process(rr.processResponse, serialisation);
-	break;
-    case RRType::Finish:
-	j = VampJson::fromVampResponse_Finish(rr.finishResponse, serialisation);
-	break;
-    case RRType::NotValid:
-	break;
+	j = VampJson::fromError(rr.errorText, rr.type);
+
+    } else {
+    
+        switch (rr.type) {
+
+        case RRType::List:
+            j = VampJson::fromVampResponse_List("", rr.listResponse);
+            break;
+        case RRType::Load:
+            j = VampJson::fromVampResponse_Load(rr.loadResponse, m_mapper);
+            break;
+        case RRType::Configure:
+            j = VampJson::fromVampResponse_Configure(rr.configurationResponse,
+                                                     m_mapper);
+            break;
+        case RRType::Process:
+            j = VampJson::fromVampResponse_Process
+                (rr.processResponse, m_mapper, serialisation);
+            break;
+        case RRType::Finish:
+            j = VampJson::fromVampResponse_Finish
+                (rr.finishResponse, m_mapper, serialisation);
+            break;
+        case RRType::NotValid:
+            break;
+        }
     }
 
     return j.dump();
 }
 
-vector<Vamp::HostExt::PluginStaticData>
+Vamp::HostExt::ListResponse
 VamPipePluginLibrary::listPluginData() const
 {
-    vector<Vamp::HostExt::PluginStaticData> data;
+    Vamp::HostExt::ListResponse resp;
     for (auto a: m_adapters) {
-	data.push_back(a.second->getStaticData());
+	resp.pluginData.push_back(a.second->getStaticData());
     }
-    return data;
+    return resp;
 }
 
 Vamp::HostExt::LoadResponse
@@ -209,7 +219,8 @@ VamPipePluginLibrary::processRawImpl(int pluginHandle,
 
         Vamp::Plugin *plugin = m_mapper.handleToPlugin(pluginHandle);
         Vamp::RealTime timestamp(sec, nsec);
-        
+
+        response.processResponse.plugin = plugin;
         response.processResponse.features = plugin->process(inputBuffers, timestamp);
         response.success = true;
 
@@ -293,6 +304,7 @@ VamPipePluginLibrary::requestJsonImpl(string req)
 		fbuffers[i] = preq.inputBuffers[i].data();
 	    }
 
+            response.processResponse.plugin = preq.plugin;
 	    response.processResponse.features =
                 preq.plugin->process(fbuffers, preq.timestamp);
 	    response.success = true;
@@ -303,13 +315,14 @@ VamPipePluginLibrary::requestJsonImpl(string req)
 
 	case RRType::Finish:
 	{
-	    auto h = m_mapper.pluginToHandle(request.finishPlugin);
-
+            response.finishResponse.plugin = request.finishRequest.plugin;
 	    response.finishResponse.features =
-		request.finishPlugin->getRemainingFeatures();
+		request.finishRequest.plugin->getRemainingFeatures();
 	    
-	    m_mapper.removePlugin(h);
-	    delete request.finishPlugin;
+            // We do not delete the plugin here -- we need it in the
+            // mapper when converting the features. It gets deleted
+            // below, after the writeResponse() call.
+	
 	    response.success = true;
 	    break;
 	}
@@ -318,7 +331,15 @@ VamPipePluginLibrary::requestJsonImpl(string req)
 	    break;
 	}
     
-	return writeResponse(response);
+	string rstr = writeResponse(response);
+
+        if (request.type == RRType::Finish) {
+            auto h = m_mapper.pluginToHandle(request.finishRequest.plugin);
+            m_mapper.removePlugin(h);
+            delete request.finishRequest.plugin;
+        }
+
+        return rstr;
 
     } catch (const std::exception &e) {
 	return VampJson::fromException(e, request.type).dump();
