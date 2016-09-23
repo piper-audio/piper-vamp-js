@@ -30,7 +30,6 @@ EMFLAGS		:= \
 		-s MODULARIZE=1 \
 		-s NO_FILESYSTEM=1 \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=1 \
-		-s DISABLE_EXCEPTION_CATCHING=0 \
 	    	-s EXPORT_NAME="'$(MODULE_SYMBOL)'" \
 	    	-s EXPORTED_FUNCTIONS="['_vampipeRequestJson','_vampipeProcessRaw','_vampipeFreeJson']" \
 		$(EMFLAGS)

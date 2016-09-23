@@ -71,9 +71,11 @@ private:
     std::string processRawImpl(int, const float *const *, int, int);
 
     Vamp::HostExt::ListResponse listPluginData() const;
-    Vamp::HostExt::LoadResponse loadPlugin(Vamp::HostExt::LoadRequest r) const;
+    Vamp::HostExt::LoadResponse loadPlugin(Vamp::HostExt::LoadRequest r,
+                                           std::string &err) const;
     Vamp::HostExt::ConfigurationResponse configurePlugin(Vamp::HostExt::
-							 ConfigurationRequest r)
+							 ConfigurationRequest r,
+                                                         std::string &err)
         const;
 
     // map from pluginKey -> adapter
