@@ -76,7 +76,7 @@ VamPipePluginLibrary::listPluginData() const
 {
     Vamp::HostExt::ListResponse resp;
     for (auto a: m_adapters) {
-	resp.pluginData.push_back(a.second->getStaticData());
+	resp.plugins.push_back(a.second->getStaticData());
     }
     return resp;
 }
