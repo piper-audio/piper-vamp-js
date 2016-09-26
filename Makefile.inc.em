@@ -42,7 +42,7 @@ CXX		:= em++
 #OPTFLAGS	:= -g3
 OPTFLAGS	:= -O3 -ffast-math
 
-DEFINES		:= -DSINGLE_PRECISION_FFT $(DEFINES)
+DEFINES		:= $(DEFINES)
 
 CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS)
 

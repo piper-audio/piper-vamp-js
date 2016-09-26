@@ -70,6 +70,22 @@ function processRaw(request) {
     return response;
 }
 
+function makeTimestamp(seconds) {
+    if (seconds >= 0.0) {
+        return {
+            s: Math.floor(seconds),
+            n: Math.floor((seconds - Math.floor(seconds)) * 1e9 + 0.5)
+        };
+    } else {
+        const { s, n } = makeTimestamp(-seconds);
+        return { s: -s, n: -n };
+    }
+}
+
+function frame2timestamp(frame, rate) {
+    return makeTimestamp(frame / rate);
+}
+
 function request(jsonStr) {
     note("Request JSON = " + jsonStr);
     var m = exampleModule;
@@ -86,10 +102,51 @@ function request(jsonStr) {
     return result;
 }
 
+function myFromBase64(b64) {
+    while (b64.length % 4 > 0) { b64 += "="; }
+    let conv = new Float32Array(toByteArray(b64).buffer);
+    return conv;
+}
+
+function convertWireFeature(wfeature) {
+    let out = {};
+    if (wfeature.timestamp != null) {
+        out.timestamp = wfeature.timestamp;
+    }
+    if (wfeature.duration != null) {
+        out.duration = wfeature.duration;
+    }
+    if (wfeature.label != null) {
+        out.label = wfeature.label;
+    }
+    if (wfeature.b64values != null && wfeature.b64values !== "") {
+        out.values = myFromBase64(wfeature.b64values);
+    } else if (wfeature.values != null) {
+        out.values = new Float32Array(wfeature.values);
+    }
+    return out;
+}
+
+function convertWireFeatureList(wfeatures) {
+    return wfeatures.map(convertWireFeature);
+}
+
+function responseToFeatureSet(response) {
+    const features = new Map();
+    const processResponse = response.content;
+    const wireFeatures = processResponse.features;
+    Object.keys(wireFeatures).forEach(key => {
+        return features.set(key, convertWireFeatureList(wireFeatures[key]));
+    });
+    return features;
+}
+
 function test() {
 
+    const rate = 44100;
+    
     comment("Loading zero crossings plugin...");
-    let result = request('{"type":"load","content": {"pluginKey":"vamp-example-plugins:zerocrossing","inputSampleRate":44100,"adapterFlags":["AdaptAllSafe"]}}');
+    let result = request('{"type":"load","content": {"pluginKey":"vamp-example-plugins:zerocrossing","inputSampleRate":' + rate + ',"adapterFlags":["AdaptAllSafe"]}}');
 
     const blockSize = 1024;
 
@@ -97,47 +154,62 @@ function test() {
 
     const nblocks = 1000;
 
-    let processInputBuffers = [new Float32Array(
-        Array.from(Array(blockSize).keys(), n => n / blockSize))
-    ];
+    const makeBlock = (n => { 
+        return {
+            timestamp : frame2timestamp(n * blockSize, rate),
+            inputBuffers : [
+                { values : new Float32Array(
+                    Array.from(Array(blockSize).keys(),
+                               n => n / blockSize)) }
+            ],
+        }
+    });
+    
+    const blocks = Array.from(Array(nblocks).keys(), makeBlock);
     
     comment("Now processing " + nblocks + " blocks of 1024 samples each...");
 
+    let total = 0;
+    
     let start = (new Date()).getTime();
     comment("Start at " + start);
     
     for (let i = 0; i < nblocks; ++i) {
-	let ts = { "s": i, "n": 0 }; // wholly bogus, but ZC plugin doesn't use it
 	result = processRaw({
 	    "pluginHandle": 1,
-	    "processInput": {
-		"timestamp": ts,
-		"inputBuffers": processInputBuffers
-	    }
+	    "processInput": blocks[i]
 	});
+        let features = responseToFeatureSet(result);
+        let count = features.get("counts")[0].values[0];
+        total += count;
     }
 
     let finish = (new Date()).getTime();
     comment("Finish at " + finish + " for a time of " + (finish - start) + " ms");
 
+    comment("Total = " + total);
+
     comment("Again...");
+
+    total = 0;
     
     start = (new Date()).getTime();
     comment("Start at " + start);
     
     for (let i = 0; i < nblocks; ++i) {
-	let ts = { "s": i, "n": 0 }; // wholly bogus, but ZC plugin doesn't use it
 	result = processRaw({
 	    "pluginHandle": 1,
-	    "processInput": {
-		"timestamp": ts,
-		"inputBuffers": processInputBuffers
-	    }
+	    "processInput": blocks[i]
 	});
+        let features = responseToFeatureSet(result);
+        let count = features.get("counts")[0].values[0];
+        total += count;
     }
 
     finish = (new Date()).getTime();
     comment("Finish at " + finish + " for a time of " + (finish - start) + " ms");
+    
+    comment("Total = " + total);
     
     comment("Cleaning up the plugin and getting any remaining features...");
     result = request('{"type":"finish","content":{"pluginHandle":1}}');
