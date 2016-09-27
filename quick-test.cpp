@@ -45,12 +45,12 @@ int main(int, char **)
     cout << configResponse << endl;
     freeFn(configResponse);
 
-    string processRequest = "{\"type\":\"process\",\"content\":{\"pluginHandle\":1,\"processInput\":{\"timestamp\":{\"s\":0,\"n\":0},\"inputBuffers\":[{\"values\":[0,1,0,-1,0,1,0,-1]}]}}}";
+    string processRequest = "{\"type\":\"process\",\"content\":{\"pluginHandle\":1,\"processInput\":{\"timestamp\":{\"s\":0,\"n\":0},\"inputBuffers\":[[0,1,0,-1,0,1,0,-1]]}}}";
     const char *processResponse = reqFn(processRequest.c_str());
     cout << processResponse << endl;
     freeFn(processResponse);
 
-    string b64processRequest = "{\"type\":\"process\",\"content\":{\"pluginHandle\":1,\"processInput\":{\"timestamp\":{\"s\":0,\"n\":0},\"inputBuffers\":[{\"b64values\":\"AAAAAAAAgD8AAAAAAACAvwAAAAAAAIA/AAAAAAAAgL8\"}]}}}";
+    string b64processRequest = "{\"type\":\"process\",\"content\":{\"pluginHandle\":1,\"processInput\":{\"timestamp\":{\"s\":0,\"n\":0},\"inputBuffers\":[\"AAAAAAAAgD8AAAAAAACAvwAAAAAAAIA/AAAAAAAAgL8\"]}}}";
     const char *b64processResponse = reqFn(b64processRequest.c_str());
     cout << b64processResponse << endl;
     freeFn(b64processResponse);

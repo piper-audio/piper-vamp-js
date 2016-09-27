@@ -178,7 +178,7 @@ VamPipePluginLibrary::requestJsonImpl(string req)
     VampJson::BufferSerialisation serialisation =
         (m_useBase64 ?
          VampJson::BufferSerialisation::Base64 :
-         VampJson::BufferSerialisation::Text);
+         VampJson::BufferSerialisation::Array);
 
     Json rj;
     

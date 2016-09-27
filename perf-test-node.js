@@ -39,7 +39,7 @@ function comment(blah) {
 function processRaw(request) {
     
     const nChannels = request.processInput.inputBuffers.length;
-    const nFrames = request.processInput.inputBuffers[0].values.length;
+    const nFrames = request.processInput.inputBuffers[0].length;
 
     const buffersPtr = exampleModule._malloc(nChannels * 4);
     const buffers = new Uint32Array(
@@ -49,7 +49,7 @@ function processRaw(request) {
         const framesPtr = exampleModule._malloc(nFrames * 4);
         const frames = new Float32Array(
             exampleModule.HEAPU8.buffer, framesPtr, nFrames);
-        frames.set(request.processInput.inputBuffers[i].values);
+        frames.set(request.processInput.inputBuffers[i]);
         buffers[i] = framesPtr;
     }
     
@@ -64,8 +64,8 @@ function processRaw(request) {
     }
     exampleModule._free(buffersPtr);
 
-    const response = JSON.parse(
-        exampleModule.Pointer_stringify(responseJson));
+    const responseJstr = exampleModule.Pointer_stringify(responseJson);
+    const response = JSON.parse(responseJstr);
     
     vampipeFreeJson(responseJson);
     
@@ -121,10 +121,13 @@ function convertWireFeature(wfeature) {
     if (wfeature.label != null) {
         out.label = wfeature.label;
     }
-    if (wfeature.b64values != null && wfeature.b64values !== "") {
-        out.values = myFromBase64(wfeature.b64values);
-    } else if (wfeature.values != null) {
-        out.values = new Float32Array(wfeature.values);
+    const vv = wfeature.featureValues;
+    if (vv != null) {
+        if (typeof vv === "string") {
+            out.featureValues = myFromBase64(vv);
+        } else {
+            out.featureValues = new Float32Array(vv);
+        }
     }
     return out;
 }
@@ -160,9 +163,8 @@ function test() {
         return {
             timestamp : frame2timestamp(n * blockSize, rate),
             inputBuffers : [
-                { values : new Float32Array(
-                    Array.from(Array(blockSize).keys(),
-                               n => n / blockSize)) }
+                new Float32Array(Array.from(Array(blockSize).keys(),
+                                            n => n / blockSize))
             ],
         }
     });
@@ -182,7 +184,7 @@ function test() {
 	    "processInput": blocks[i]
 	});
         let features = responseToFeatureSet(result);
-        let count = features.get("counts")[0].values[0];
+        let count = features.get("counts")[0].featureValues[0];
         total += count;
     }
 
@@ -204,7 +206,7 @@ function test() {
 	    "processInput": blocks[i]
 	});
         let features = responseToFeatureSet(result);
-        let count = features.get("counts")[0].values[0];
+        let count = features.get("counts")[0].featureValues[0];
         total += count;
     }
 

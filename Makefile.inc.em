@@ -44,7 +44,7 @@ OPTFLAGS	:= -O3 -ffast-math
 
 DEFINES		:= $(DEFINES)
 
-CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS)
+CXXFLAGS	:= -std=c++11 -fPIC -fno-exceptions -Wall -Wextra $(DEFINES) $(OPTFLAGS)
 
 INCPATH		:= -I$(SDK_DIR) -I.. -I../json $(INCPATH)
 
