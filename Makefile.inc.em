@@ -57,7 +57,7 @@ OBJECTS		:= $(CXX_OBJECTS) $(C_OBJECTS)
 all:		$(MODULE)
 
 $(MODULE):	$(OBJECTS)
-		$(CXX) $(OBTFLAGS) $(EMFLAGS) -o $(MODULE) $(OBJECTS) $(MODULE_LDFLAGS) && \
+		$(CXX) $(OPTFLAGS) $(EMFLAGS) -o $(MODULE) $(OBJECTS) $(MODULE_LDFLAGS) && \
 		( echo "if (typeof process === 'object') module.exports=$(MODULE_SYMBOL);" >> $(MODULE) )
 
 clean:
