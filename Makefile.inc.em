@@ -34,26 +34,31 @@ EMFLAGS		:= \
 	    	-s EXPORTED_FUNCTIONS="['_vampipeRequestJson','_vampipeProcessRaw','_vampipeFreeJson']" \
 		$(EMFLAGS)
 
-SOURCES		:= $(MODULE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(OTHER_SOURCES)
+CXX_SOURCES	:= $(MODULE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(SDK_SOURCES) $(OTHER_SOURCES)
 LDFLAGS		:= $(EMFLAGS)
 
 CXX		:= em++
+CC		:= emcc
 
 #OPTFLAGS	:= -g3
 OPTFLAGS	:= -O3 -ffast-math
 
 DEFINES		:= $(DEFINES)
 
-CXXFLAGS	:= -std=c++11 -fPIC -fno-exceptions -Wall -Wextra $(DEFINES) $(OPTFLAGS)
-
 INCPATH		:= -I$(SDK_DIR) -I.. -I../json $(INCPATH)
+
+CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCPATH)
+CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCPATH)
+
+CXX_OBJECTS	:= $(CXX_SOURCES:.cpp=.o)
+C_OBJECTS	:= $(C_SOURCES:.c=.o)
+OBJECTS		:= $(CXX_OBJECTS) $(C_OBJECTS)
 
 all:		$(MODULE)
 
-$(MODULE):	$(SOURCES) $(ADAPTER_HEADERS) $(SDK_SOURCES)
-		$(CXX) $(CXXFLAGS) $(EMFLAGS) $(INCPATH) -o $(MODULE) \
-		       $(SOURCES) $(SDK_SOURCES) $(MODULE_LDFLAGS) && \
+$(MODULE):	$(OBJECTS)
+		$(CXX) $(OBTFLAGS) $(EMFLAGS) -o $(MODULE) $(OBJECTS) $(MODULE_LDFLAGS) && \
 		( echo "if (typeof process === 'object') module.exports=$(MODULE_SYMBOL);" >> $(MODULE) )
 
 clean:
-		rm -f $(MODULE)
+		rm -f $(MODULE) $(OBJECTS)
