@@ -54,10 +54,6 @@ convertRequestJson(string input, string &err)
     }
     if (!j.is_object()) {
 	err = "object expected at top level";
-    } else if (!j["type"].is_string()) {
-	err = "string expected for type field";
-    } else if (!j["content"].is_null() && !j["content"].is_object()) {
-	err = "object expected for content field";
     }
     return j;
 }
