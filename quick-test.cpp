@@ -35,27 +35,27 @@ int main(int, char **)
     cout << listResponse << endl;
     freeFn(listResponse);
 
-    string loadRequest = "{\"method\":\"load\",\"params\": {\"pluginKey\":\"vamp-example-plugins:powerspectrum\",\"inputSampleRate\":44100,\"adapterFlags\":[\"AdaptAllSafe\"]}}";
+    string loadRequest = "{\"method\":\"load\",\"params\": {\"key\":\"vamp-example-plugins:powerspectrum\",\"inputSampleRate\":44100,\"adapterFlags\":[\"AdaptAllSafe\"]}}";
     const char *loadResponse = reqFn(loadRequest.c_str());
     cout << loadResponse << endl;
     freeFn(loadResponse);
 
-    string configRequest = "{\"method\":\"configure\",\"params\":{\"pluginHandle\":1,\"configuration\":{\"blockSize\":8,\"channelCount\":1,\"stepSize\":8}}}";
+    string configRequest = "{\"method\":\"configure\",\"params\":{\"handle\":1,\"configuration\":{\"blockSize\":8,\"channelCount\":1,\"stepSize\":8}}}";
     const char *configResponse = reqFn(configRequest.c_str());
     cout << configResponse << endl;
     freeFn(configResponse);
 
-    string processRequest = "{\"method\":\"process\",\"params\":{\"pluginHandle\":1,\"processInput\":{\"timestamp\":{\"s\":0,\"n\":0},\"inputBuffers\":[[0,1,0,-1,0,1,0,-1]]}}}";
+    string processRequest = "{\"method\":\"process\",\"params\":{\"handle\":1,\"processInput\":{\"timestamp\":{\"s\":0,\"n\":0},\"inputBuffers\":[[0,1,0,-1,0,1,0,-1]]}}}";
     const char *processResponse = reqFn(processRequest.c_str());
     cout << processResponse << endl;
     freeFn(processResponse);
 
-    string b64processRequest = "{\"method\":\"process\",\"params\":{\"pluginHandle\":1,\"processInput\":{\"timestamp\":{\"s\":0,\"n\":0},\"inputBuffers\":[\"AAAAAAAAgD8AAAAAAACAvwAAAAAAAIA/AAAAAAAAgL8\"]}}}";
+    string b64processRequest = "{\"method\":\"process\",\"params\":{\"handle\":1,\"processInput\":{\"timestamp\":{\"s\":0,\"n\":0},\"inputBuffers\":[\"AAAAAAAAgD8AAAAAAACAvwAAAAAAAIA/AAAAAAAAgL8\"]}}}";
     const char *b64processResponse = reqFn(b64processRequest.c_str());
     cout << b64processResponse << endl;
     freeFn(b64processResponse);
     
-    string finishRequest = "{\"method\":\"finish\",\"params\":{\"pluginHandle\":1}}";
+    string finishRequest = "{\"method\":\"finish\",\"params\":{\"handle\":1}}";
     const char *finishResponse = reqFn(finishRequest.c_str());
     cout << finishResponse << endl;
     freeFn(finishResponse);

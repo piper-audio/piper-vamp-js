@@ -52,7 +52,7 @@ function processRaw(request) {
     }
     
     const responseJson = vampipeProcessRaw(
-        request.pluginHandle,
+        request.handle,
         buffersPtr,
         request.processInput.timestamp.s,
         request.processInput.timestamp.n);
@@ -136,7 +136,7 @@ function convertWireFeatureList(wfeatures) {
 
 function responseToFeatureSet(response) {
     const features = new Map();
-    const processResponse = response.content;
+    const processResponse = response.result;
     const wireFeatures = processResponse.features;
     Object.keys(wireFeatures).forEach(key => {
         return features.set(key, convertWireFeatureList(wireFeatures[key]));
@@ -149,11 +149,11 @@ function test() {
     const rate = 44100;
     
     comment("Loading zero crossings plugin...");
-    let result = request('{"type":"load","content": {"pluginKey":"vamp-example-plugins:zerocrossing","inputSampleRate":' + rate + ',"adapterFlags":["AdaptAllSafe"]}}');
+    let result = request('{"method":"load","params": {"key":"vamp-example-plugins:zerocrossing","inputSampleRate":' + rate + ',"adapterFlags":["AdaptAllSafe"]}}');
 
     const blockSize = 1024;
 
-    result = request('{"type":"configure","content":{"pluginHandle":1,"configuration":{"blockSize": ' + blockSize + ', "channelCount": 1, "stepSize": ' + blockSize + '}}}');
+    result = request('{"method":"configure","params":{"handle":1,"configuration":{"blockSize": ' + blockSize + ', "channelCount": 1, "stepSize": ' + blockSize + '}}}');
 
     const nblocks = 1000;
 
@@ -178,7 +178,7 @@ function test() {
     
     for (let i = 0; i < nblocks; ++i) {
 	result = processRaw({
-	    "pluginHandle": 1,
+	    "handle": 1,
 	    "processInput": blocks[i]
 	});
         let features = responseToFeatureSet(result);
@@ -200,7 +200,7 @@ function test() {
     
     for (let i = 0; i < nblocks; ++i) {
 	result = processRaw({
-	    "pluginHandle": 1,
+	    "handle": 1,
 	    "processInput": blocks[i]
 	});
         let features = responseToFeatureSet(result);
@@ -214,7 +214,7 @@ function test() {
     comment("Total = " + total);
     
     comment("Cleaning up the plugin and getting any remaining features...");
-    result = request('{"type":"finish","content":{"pluginHandle":1}}');
+    result = request('{"method":"finish","params":{"handle":1}}');
 }
 
 window.onload = function() {
