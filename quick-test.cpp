@@ -45,7 +45,7 @@ int main(int, char **)
     cout << configResponse << endl;
     freeFn(configResponse);
 
-    string processRequest = "{\"method\":\"process\",\"params\":{\"handle\":1,\"processInput\":{\"timestamp\":{\"s\":0,\"n\":0},\"inputBuffers\":[[0,1,0,-1,0,1,0,-1]]}}}";
+    string processRequest = "{\"method\":\"process\",\"id\": 6,\"params\":{\"handle\":1,\"processInput\":{\"timestamp\":{\"s\":0,\"n\":0},\"inputBuffers\":[[0,1,0,-1,0,1,0,-1]]}}}";
     const char *processResponse = reqFn(processRequest.c_str());
     cout << processResponse << endl;
     freeFn(processResponse);
