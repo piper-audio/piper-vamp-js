@@ -1,8 +1,9 @@
 
-ADAPTER_HEADERS	:= VamPipeAdapter.h VamPipePluginLibrary.h 
-ADAPTER_SOURCES	:= VamPipePluginLibrary.cpp
+ADAPTER_HEADERS	:= PiperAdapter.h PiperPluginLibrary.h 
+ADAPTER_SOURCES	:= PiperPluginLibrary.cpp
 
 SDK_DIR		:= ../vamp-plugin-sdk
+PIPERCPP_DIR    := ../piper-cpp
 
 SDK_SOURCES	:= \
         	$(SDK_DIR)/src/vamp-hostsdk/PluginBufferingAdapter.cpp \
@@ -19,7 +20,7 @@ SDK_SOURCES	:= \
 		$(SDK_DIR)/src/vamp-sdk/FFT.cpp
 
 OTHER_SOURCES	:= \
-		../json/json11/json11.cpp
+		$(PIPERCPP_DIR)/json11/json11.cpp
 
 MODULE_EXT	:= .js
 MODULE		:= $(MODULE_NAME)$(MODULE_EXT)
@@ -31,7 +32,7 @@ EMFLAGS		:= \
 		-s NO_FILESYSTEM=1 \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=1 \
 	    	-s EXPORT_NAME="'$(MODULE_SYMBOL)'" \
-	    	-s EXPORTED_FUNCTIONS="['_vampipeRequestJson','_vampipeProcessRaw','_vampipeFreeJson']" \
+	    	-s EXPORTED_FUNCTIONS="['_piperRequestJson','_piperProcessRaw','_piperFreeJson']" \
 		$(EMFLAGS)
 
 CXX_SOURCES	:= $(MODULE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(SDK_SOURCES) $(OTHER_SOURCES)
@@ -45,7 +46,7 @@ OPTFLAGS	:= -O3 -ffast-math
 
 DEFINES		:= $(DEFINES)
 
-INCPATH		:= -I$(SDK_DIR) -I.. -I../json $(INCPATH)
+INCPATH		:= -I$(SDK_DIR) -I$(PIPERCPP_DIR) $(INCPATH)
 
 CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCPATH)
 CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCPATH)

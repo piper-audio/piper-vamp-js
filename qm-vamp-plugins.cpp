@@ -1,7 +1,7 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 
 /*
-    VamPipe
+    Piper
 
     Centre for Digital Music, Queen Mary, University of London.
     Copyright 2015-2016 QMUL.
@@ -32,8 +32,8 @@
     authorization.
 */
 
-#include "VamPipeAdapter.h"
-#include "VamPipePluginLibrary.h"
+#include "PiperAdapter.h"
+#include "PiperPluginLibrary.h"
 
 #include "plugins/BeatTrack.h"
 #include "plugins/OnsetDetect.h"
@@ -49,26 +49,26 @@
 #include "plugins/DWT.h"
 #include "plugins/Transcription.h"
 
-using vampipe::VamPipeAdapter;
-using vampipe::VamPipePluginLibrary;
+using piper::PiperAdapter;
+using piper::PiperPluginLibrary;
 
 static std::string soname("qm-vamp-plugins");
 
-static VamPipeAdapter<BeatTracker> beatTrackerAdapter(soname);
-static VamPipeAdapter<OnsetDetector> onsetDetectorAdapter(soname);
-static VamPipeAdapter<ChromagramPlugin> chromagramPluginAdapter(soname);
-static VamPipeAdapter<ConstantQSpectrogram> constantQAdapter(soname);
-static VamPipeAdapter<TonalChangeDetect> tonalChangeDetectorAdapter(soname);
-static VamPipeAdapter<KeyDetector> keyDetectorAdapter(soname);
-static VamPipeAdapter<MFCCPlugin> mfccPluginAdapter(soname);
-static VamPipeAdapter<SegmenterPlugin> segmenterPluginAdapter(soname);
-static VamPipeAdapter<SimilarityPlugin> similarityPluginAdapter(soname);
-static VamPipeAdapter<BarBeatTracker> barBeatTrackPluginAdapter(soname);
-//!!!static VamPipeAdapter<AdaptiveSpectrogram> adaptiveSpectrogramAdapter(soname);
-static VamPipeAdapter<DWT> dwtAdapter(soname);
-static VamPipeAdapter<Transcription> transcriptionAdapter(soname);
+static PiperAdapter<BeatTracker> beatTrackerAdapter(soname);
+static PiperAdapter<OnsetDetector> onsetDetectorAdapter(soname);
+static PiperAdapter<ChromagramPlugin> chromagramPluginAdapter(soname);
+static PiperAdapter<ConstantQSpectrogram> constantQAdapter(soname);
+static PiperAdapter<TonalChangeDetect> tonalChangeDetectorAdapter(soname);
+static PiperAdapter<KeyDetector> keyDetectorAdapter(soname);
+static PiperAdapter<MFCCPlugin> mfccPluginAdapter(soname);
+static PiperAdapter<SegmenterPlugin> segmenterPluginAdapter(soname);
+static PiperAdapter<SimilarityPlugin> similarityPluginAdapter(soname);
+static PiperAdapter<BarBeatTracker> barBeatTrackPluginAdapter(soname);
+//!!!static PiperAdapter<AdaptiveSpectrogram> adaptiveSpectrogramAdapter(soname);
+static PiperAdapter<DWT> dwtAdapter(soname);
+static PiperAdapter<Transcription> transcriptionAdapter(soname);
 
-static VamPipePluginLibrary library({
+static PiperPluginLibrary library({
 	&beatTrackerAdapter,
 	    &onsetDetectorAdapter,
 	    &chromagramPluginAdapter,
@@ -86,18 +86,18 @@ static VamPipePluginLibrary library({
 
 extern "C" {
 
-const char *vampipeRequestJson(const char *request) {
+const char *piperRequestJson(const char *request) {
     return library.requestJson(request);
 }
 
-const char *vampipeProcessRaw(int handle,
+const char *piperProcessRaw(int handle,
                               const float *const *inputBuffers,
                               int sec,
                               int nsec) {
     return library.processRaw(handle, inputBuffers, sec, nsec);
 }
     
-void vampipeFreeJson(const char *json) {
+void piperFreeJson(const char *json) {
     return library.freeJson(json);
 }
 

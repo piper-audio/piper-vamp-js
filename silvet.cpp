@@ -1,34 +1,34 @@
 
-#include "VamPipeAdapter.h"
-#include "VamPipePluginLibrary.h"
+#include "PiperAdapter.h"
+#include "PiperPluginLibrary.h"
 
 #include "Silvet.h"
 
-using vampipe::VamPipeAdapter;
-using vampipe::VamPipePluginLibrary;
+using piper::PiperAdapter;
+using piper::PiperPluginLibrary;
 
 static std::string soname("silvet");
 
-static VamPipeAdapter<Silvet> silvetAdapter(soname);
+static PiperAdapter<Silvet> silvetAdapter(soname);
 
-static VamPipePluginLibrary library({
+static PiperPluginLibrary library({
     &silvetAdapter
 });
 
 extern "C" {
 
-const char *vampipeRequestJson(const char *request) {
+const char *piperRequestJson(const char *request) {
     return library.requestJson(request);
 }
 
-const char *vampipeProcessRaw(int handle,
+const char *piperProcessRaw(int handle,
                               const float *const *inputBuffers,
                               int sec,
                               int nsec) {
     return library.processRaw(handle, inputBuffers, sec, nsec);
 }
     
-void vampipeFreeJson(const char *json) {
+void piperFreeJson(const char *json) {
     return library.freeJson(json);
 }
 

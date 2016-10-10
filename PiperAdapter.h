@@ -1,7 +1,7 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 
 /*
-    VamPipe
+    Piper Vamp JSON Adapter
 
     Centre for Digital Music, Queen Mary, University of London.
     Copyright 2015-2016 QMUL.
@@ -32,8 +32,8 @@
     authorization.
 */
 
-#ifndef VAMPIPE_ADAPTER_H
-#define VAMPIPE_ADAPTER_H
+#ifndef PIPER_ADAPTER_H
+#define PIPER_ADAPTER_H
 
 #include <vamp-hostsdk/PluginStaticData.h>
 #include <vamp-hostsdk/PluginConfiguration.h>
@@ -43,9 +43,9 @@
 #include <vamp-hostsdk/PluginBufferingAdapter.h>
 #include <vamp-hostsdk/PluginChannelAdapter.h>
 
-namespace vampipe {
+namespace piper {
 
-class VamPipeAdapterInterface
+class PiperAdapterInterface
 {
 public:
     virtual Vamp::HostExt::PluginStaticData getStaticData() const = 0;
@@ -54,14 +54,14 @@ public:
 };
 
 template <typename P>
-class VamPipeAdapterBase : public VamPipeAdapterInterface
+class PiperAdapterBase : public PiperAdapterInterface
 {
     const int adaptInputDomain = 0x01;
     const int adaptChannelCount = 0x02;
     const int adaptBufferSize = 0x04;
 
 protected:
-    VamPipeAdapterBase(std::string libname) : m_soname(libname) { }
+    PiperAdapterBase(std::string libname) : m_soname(libname) { }
     
 public:
     virtual Vamp::Plugin *createPlugin(float inputSampleRate) const = 0;
@@ -126,10 +126,10 @@ private:
 };
 
 template <typename P>
-class VamPipeAdapter : public VamPipeAdapterBase<P>
+class PiperAdapter : public PiperAdapterBase<P>
 {
 public:
-    VamPipeAdapter(std::string libname) : VamPipeAdapterBase<P>(libname) { }
+    PiperAdapter(std::string libname) : PiperAdapterBase<P>(libname) { }
     
     virtual Vamp::Plugin *createPlugin(float inputSampleRate) const {
         return new P(inputSampleRate);

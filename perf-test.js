@@ -6,24 +6,24 @@ var exampleModule = VampExamplePluginsModule();
 // "string", in which case Emscripten will take care of
 // conversions. But it's not clear how one would manage memory for
 // newly-constructed returned C strings -- the returned pointer from
-// vampipeRequestJson would appear (?) to be thrown away by the
+// piperRequestJson would appear (?) to be thrown away by the
 // Emscripten string converter if we declare it as returning a string,
-// so we have no opportunity to pass it to vampipeFreeJson, which
+// so we have no opportunity to pass it to piperFreeJson, which
 // suggests this would leak memory if the string isn't static. Not
 // wholly sure though. Anyway, passing and returning pointers (as
 // numbers) means we can manage the Emscripten heap memory however we
 // want in our request wrapper function below.
 
-var vampipeRequestJson = exampleModule.cwrap(
-    'vampipeRequestJson', 'number', ['number']
+var piperRequestJson = exampleModule.cwrap(
+    'piperRequestJson', 'number', ['number']
 );
 
-var vampipeProcessRaw = exampleModule.cwrap(
-    "vampipeProcessRaw", "number", ["number", "number", "number", "number"]
+var piperProcessRaw = exampleModule.cwrap(
+    "piperProcessRaw", "number", ["number", "number", "number", "number"]
 );
 
-var vampipeFreeJson = exampleModule.cwrap(
-    'vampipeFreeJson', 'void', ['number']
+var piperFreeJson = exampleModule.cwrap(
+    'piperFreeJson', 'void', ['number']
 );
 
 function note(blah) {
@@ -51,7 +51,7 @@ function processRaw(request) {
         buffers[i] = framesPtr;
     }
     
-    const responseJson = vampipeProcessRaw(
+    const responseJson = piperProcessRaw(
         request.handle,
         buffersPtr,
         request.processInput.timestamp.s,
@@ -65,7 +65,7 @@ function processRaw(request) {
     const responseJstr = exampleModule.Pointer_stringify(responseJson);
     const response = JSON.parse(responseJstr);
     
-    vampipeFreeJson(responseJson);
+    piperFreeJson(responseJson);
     
     return response;
 }
@@ -94,10 +94,10 @@ function request(jsonStr) {
     // don't mention this). Note the *Cstr values are Emscripten heap
     // pointers
     var inCstr = m.allocate(m.intArrayFromString(jsonStr), 'i8', m.ALLOC_NORMAL);
-    var outCstr = vampipeRequestJson(inCstr);
+    var outCstr = piperRequestJson(inCstr);
     m._free(inCstr);
     var result = m.Pointer_stringify(outCstr);
-    vampipeFreeJson(outCstr);
+    piperFreeJson(outCstr);
     note("Returned JSON = " + result);
     return result;
 }

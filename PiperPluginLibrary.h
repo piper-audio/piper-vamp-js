@@ -1,7 +1,7 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 
 /*
-    VamPipe
+    Piper Vamp JSON Adapter
 
     Centre for Digital Music, Queen Mary, University of London.
     Copyright 2015-2016 QMUL.
@@ -32,10 +32,10 @@
     authorization.
 */
 
-#ifndef VAMPIPE_PLUGIN_LIBRARY_H
-#define VAMPIPE_PLUGIN_LIBRARY_H
+#ifndef PIPER_PLUGIN_LIBRARY_H
+#define PIPER_PLUGIN_LIBRARY_H
 
-#include "bits/CountingPluginHandleMapper.h"
+#include "vamp-support/CountingPluginHandleMapper.h"
 
 #include <vamp-hostsdk/PluginStaticData.h>
 #include <vamp-hostsdk/RequestResponse.h>
@@ -44,14 +44,14 @@
 #include <string>
 #include <cstring>
 
-namespace vampipe {
+namespace piper {
 
-class VamPipeAdapterInterface;
+class PiperAdapterInterface;
 
-class VamPipePluginLibrary
+class PiperPluginLibrary
 {
 public:
-    VamPipePluginLibrary(std::vector<VamPipeAdapterInterface *> pp);
+    PiperPluginLibrary(std::vector<PiperAdapterInterface *> pp);
     
     const char *requestJson(const char *request) {
 	return strdup(requestJsonImpl(request).c_str());
@@ -79,7 +79,7 @@ private:
         const;
 
     // map from pluginKey -> adapter
-    std::map<std::string, VamPipeAdapterInterface *> m_adapters;
+    std::map<std::string, PiperAdapterInterface *> m_adapters;
     CountingPluginHandleMapper m_mapper;
     bool m_useBase64;
 };

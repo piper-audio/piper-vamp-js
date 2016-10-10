@@ -28,22 +28,22 @@
     dealings in this Software without prior written authorization.
 */
 
-#include "VamPipeAdapter.h"
-#include "VamPipePluginLibrary.h"
+#include "PiperAdapter.h"
+#include "PiperPluginLibrary.h"
 
 #include "VampTestPlugin.h"
 
-using vampipe::VamPipeAdapter;
-using vampipe::VamPipeAdapterBase;
-using vampipe::VamPipePluginLibrary;
+using piper::PiperAdapter;
+using piper::PiperAdapterBase;
+using piper::PiperPluginLibrary;
 
 static std::string soname("vamp-test-plugin");
 
-class Adapter : public VamPipeAdapterBase<VampTestPlugin>
+class Adapter : public PiperAdapterBase<VampTestPlugin>
 {
 public:
     Adapter(bool freq) :
-        VamPipeAdapterBase<VampTestPlugin>(soname),
+        PiperAdapterBase<VampTestPlugin>(soname),
         m_freq(freq) { }
 
 protected:
@@ -57,25 +57,25 @@ protected:
 static Adapter timeAdapter(false);
 static Adapter freqAdapter(true);
 
-static VamPipePluginLibrary library({
+static PiperPluginLibrary library({
     &timeAdapter,
     &freqAdapter
 });
 
 extern "C" {
 
-const char *vampipeRequestJson(const char *request) {
+const char *piperRequestJson(const char *request) {
     return library.requestJson(request);
 }
 
-const char *vampipeProcessRaw(int handle,
+const char *piperProcessRaw(int handle,
                               const float *const *inputBuffers,
                               int sec,
                               int nsec) {
     return library.processRaw(handle, inputBuffers, sec, nsec);
 }
     
-void vampipeFreeJson(const char *json) {
+void piperFreeJson(const char *json) {
     return library.freeJson(json);
 }
 

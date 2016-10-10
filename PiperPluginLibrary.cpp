@@ -1,7 +1,7 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 
 /*
-    VamPipe
+    Piper Vamp JSON Adapter
 
     Centre for Digital Music, Queen Mary, University of London.
     Copyright 2015-2016 QMUL.
@@ -32,18 +32,19 @@
     authorization.
 */
 
-#include "VamPipePluginLibrary.h"
-#include "VamPipeAdapter.h"
-#include "json/VampJson.h"
+#include "PiperPluginLibrary.h"
+#include "PiperAdapter.h"
+
+#include "vamp-json/VampJson.h"
 
 using namespace std;
 using namespace json11;
 
-namespace vampipe {
+namespace piper {
 
 //!!! too many explicit namespaces here
 
-//!!! dup with vampipe-convert
+//!!! dup with piper-convert
 Json
 convertRequestJson(string input, string &err)
 {
@@ -58,27 +59,27 @@ convertRequestJson(string input, string &err)
     return j;
 }
 
-VamPipePluginLibrary::VamPipePluginLibrary(vector<VamPipeAdapterInterface *> pp) :
+PiperPluginLibrary::PiperPluginLibrary(vector<PiperAdapterInterface *> pp) :
     m_useBase64(false)
 {
-    for (VamPipeAdapterInterface *p: pp) {
+    for (PiperAdapterInterface *p: pp) {
 	string key = p->getStaticData().pluginKey;
 	m_adapters[key] = p;
     }
 }
 
 Vamp::HostExt::ListResponse
-VamPipePluginLibrary::listPluginData() const
+PiperPluginLibrary::listPluginData() const
 {
     Vamp::HostExt::ListResponse resp;
     for (auto a: m_adapters) {
-	resp.plugins.push_back(a.second->getStaticData());
+	resp.available.push_back(a.second->getStaticData());
     }
     return resp;
 }
 
 Vamp::HostExt::LoadResponse
-VamPipePluginLibrary::loadPlugin(Vamp::HostExt::LoadRequest req, string &err) const
+PiperPluginLibrary::loadPlugin(Vamp::HostExt::LoadRequest req, string &err) const
 {
     string key = req.pluginKey;
     if (m_adapters.find(key) != m_adapters.end()) {
@@ -97,7 +98,7 @@ VamPipePluginLibrary::loadPlugin(Vamp::HostExt::LoadRequest req, string &err) co
 }
 
 Vamp::HostExt::ConfigurationResponse
-VamPipePluginLibrary::configurePlugin(Vamp::HostExt::ConfigurationRequest req,
+PiperPluginLibrary::configurePlugin(Vamp::HostExt::ConfigurationRequest req,
                                       string &err) const
 {
     for (Vamp::HostExt::PluginConfiguration::ParameterMap::const_iterator i =
@@ -126,7 +127,7 @@ VamPipePluginLibrary::configurePlugin(Vamp::HostExt::ConfigurationRequest req,
 }
 
 string
-VamPipePluginLibrary::processRawImpl(int handle,
+PiperPluginLibrary::processRawImpl(int handle,
                                      const float *const *inputBuffers,
                                      int sec,
                                      int nsec)
@@ -160,7 +161,7 @@ VamPipePluginLibrary::processRawImpl(int handle,
 }
 
 string
-VamPipePluginLibrary::requestJsonImpl(string req)
+PiperPluginLibrary::requestJsonImpl(string req)
 {
     string err;
     

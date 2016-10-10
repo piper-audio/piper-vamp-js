@@ -1,7 +1,7 @@
 
 MODULE_NAME	:= Silvet
 
-SILVET_DIR	:= ../../silvet
+SILVET_DIR	:= ../silvet
 
 SRC_DIR		:= $(SILVET_DIR)/src
 CQ_DIR	     	:= $(SILVET_DIR)/constant-q-cpp

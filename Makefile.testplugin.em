@@ -1,7 +1,7 @@
 
 MODULE_NAME	:= VampTestPlugin
 
-TESTPLUGIN_DIR	:= ../../vamp-test-plugin
+TESTPLUGIN_DIR	:= ../vamp-test-plugin
 
 INCPATH		:= -I$(TESTPLUGIN_DIR)
 

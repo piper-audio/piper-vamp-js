@@ -1,7 +1,7 @@
 
 MODULE_NAME	:= QMVampPlugins
 
-QMV	:= ../../qm-vamp-plugins
+QMV	:= ../qm-vamp-plugins
 DSP	:= $(QMV)/qm-dsp
 EXT	:= $(DSP)/ext
 

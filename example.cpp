@@ -1,7 +1,7 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 
 /*
-    VamPipe
+    Piper
 
     Centre for Digital Music, Queen Mary, University of London.
     Copyright 2015-2016 QMUL.
@@ -32,29 +32,29 @@
     authorization.
 */
 
-#include "VamPipeAdapter.h"
-#include "VamPipePluginLibrary.h"
+#include "PiperAdapter.h"
+#include "PiperPluginLibrary.h"
 
-#include "vamp-plugin-sdk/examples/ZeroCrossing.h"
-#include "vamp-plugin-sdk/examples/SpectralCentroid.h"
-#include "vamp-plugin-sdk/examples/PercussionOnsetDetector.h"
-#include "vamp-plugin-sdk/examples/FixedTempoEstimator.h"
-#include "vamp-plugin-sdk/examples/AmplitudeFollower.h"
-#include "vamp-plugin-sdk/examples/PowerSpectrum.h"
+#include "examples/ZeroCrossing.h"
+#include "examples/SpectralCentroid.h"
+#include "examples/PercussionOnsetDetector.h"
+#include "examples/FixedTempoEstimator.h"
+#include "examples/AmplitudeFollower.h"
+#include "examples/PowerSpectrum.h"
 
-using vampipe::VamPipeAdapter;
-using vampipe::VamPipePluginLibrary;
+using piper::PiperAdapter;
+using piper::PiperPluginLibrary;
 
 static std::string soname("vamp-example-plugins");
 
-static VamPipeAdapter<ZeroCrossing> zeroCrossingAdapter(soname);
-static VamPipeAdapter<SpectralCentroid> spectralCentroidAdapter(soname);
-static VamPipeAdapter<PercussionOnsetDetector> percussionOnsetAdapter(soname);
-static VamPipeAdapter<FixedTempoEstimator> fixedTempoAdapter(soname);
-static VamPipeAdapter<AmplitudeFollower> amplitudeAdapter(soname);
-static VamPipeAdapter<PowerSpectrum> powerSpectrumAdapter(soname);
+static PiperAdapter<ZeroCrossing> zeroCrossingAdapter(soname);
+static PiperAdapter<SpectralCentroid> spectralCentroidAdapter(soname);
+static PiperAdapter<PercussionOnsetDetector> percussionOnsetAdapter(soname);
+static PiperAdapter<FixedTempoEstimator> fixedTempoAdapter(soname);
+static PiperAdapter<AmplitudeFollower> amplitudeAdapter(soname);
+static PiperAdapter<PowerSpectrum> powerSpectrumAdapter(soname);
 
-static VamPipePluginLibrary library({
+static PiperPluginLibrary library({
     &zeroCrossingAdapter,
     &spectralCentroidAdapter,
     &percussionOnsetAdapter,
@@ -65,18 +65,18 @@ static VamPipePluginLibrary library({
 
 extern "C" {
 
-const char *vampipeRequestJson(const char *request) {
+const char *piperRequestJson(const char *request) {
     return library.requestJson(request);
 }
 
-const char *vampipeProcessRaw(int handle,
+const char *piperProcessRaw(int handle,
                               const float *const *inputBuffers,
                               int sec,
                               int nsec) {
     return library.processRaw(handle, inputBuffers, sec, nsec);
 }
     
-void vampipeFreeJson(const char *json) {
+void piperFreeJson(const char *json) {
     return library.freeJson(json);
 }
 
