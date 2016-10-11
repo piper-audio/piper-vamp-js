@@ -292,13 +292,18 @@ PiperPluginLibrary::requestJsonImpl(string req)
             auto h = m_mapper.pluginToHandle(req.plugin);
             if (h == m_mapper.INVALID_HANDLE) {
                 rj = VampJson::fromError("unknown or invalid plugin handle", type, id);
-            } else if (!m_mapper.isConfigured(h)) {
-                rj = VampJson::fromError("plugin has not been configured", type, id);
             } else {
 
                 Vamp::HostExt::ProcessResponse resp;
                 resp.plugin = req.plugin;
-                resp.features = req.plugin->getRemainingFeatures();
+
+                // Finish can be called (to unload the plugin) even if
+                // the plugin has never been configured or used. But
+                // we want to make sure we call getRemainingFeatures
+                // only if we have actually configured the plugin.
+                if (m_mapper.isConfigured(h)) {
+                    resp.features = req.plugin->getRemainingFeatures();
+                }
 
                 rj = VampJson::fromRpcResponse_Finish
                     (resp, m_mapper, serialisation, id);
