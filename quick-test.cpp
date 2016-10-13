@@ -15,7 +15,7 @@ int main(int, char **)
     }
 
     typedef const char *(*RequestFn)(const char *);
-    RequestFn reqFn = (RequestFn)dlsym(lib, "vampipeRequestJson");
+    RequestFn reqFn = (RequestFn)dlsym(lib, "piperRequestJson");
     if (!reqFn) {
 	cerr << "failed to find request function in " +
 	    example + ": " << dlerror() << endl;
@@ -23,7 +23,7 @@ int main(int, char **)
     }
     
     typedef void (*FreeFn)(const char *);
-    FreeFn freeFn = (FreeFn)dlsym(lib, "vampipeFreeJson");
+    FreeFn freeFn = (FreeFn)dlsym(lib, "piperFreeJson");
     if (!freeFn) {
 	cerr << "failed to find free function in " +
 	    example + ": " << dlerror() << endl;

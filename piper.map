@@ -1,0 +1,4 @@
+{
+	global: piperRequestJson; piperProcessRaw; piperFreeJson;
+	local: *;
+};

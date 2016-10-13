@@ -1,8 +1,9 @@
 
-ADAPTER_HEADERS	:= VamPipeAdapter.h VamPipePluginLibrary.h 
-ADAPTER_SOURCES	:= VamPipePluginLibrary.cpp
+ADAPTER_HEADERS	:= PiperAdapter.h PiperPluginLibrary.h 
+ADAPTER_SOURCES	:= PiperPluginLibrary.cpp
 
 SDK_DIR		:= ../vamp-plugin-sdk
+PIPERCPP_DIR    := ../piper-cpp
 
 PLUGIN_SOURCES	:= \
 		$(SDK_DIR)/examples/ZeroCrossing.cpp \
@@ -13,7 +14,7 @@ PLUGIN_SOURCES	:= \
 		$(SDK_DIR)/examples/PowerSpectrum.cpp
 
 OTHER_SOURCES	:= \
-		../json/json11/json11.cpp
+		$(PIPERCPP_DIR)/json11/json11.cpp
 
 SDK_LIBS	:= \
 		$(SDK_DIR)/libvamp-hostsdk.a \
@@ -23,14 +24,14 @@ EXAMPLE_EXT	:= .so
 EXAMPLE		:= example$(EXAMPLE_EXT)
 EXAMPLE_SOURCE	:= example.cpp
 EXAMPLE_SOURCES	:= $(EXAMPLE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(OTHER_SOURCES)
-EXAMPLE_LDFLAGS	:= -shared -Wl,-Bsymbolic -Wl,-soname=example.so -Wl,-z,defs -Wl,--version-script=vampipe.map
+EXAMPLE_LDFLAGS	:= -shared -Wl,-Bsymbolic -Wl,-soname=example.so -Wl,-z,defs -Wl,--version-script=piper.map
 
 TEST		:= quick-test
 TEST_SOURCE	:= quick-test.cpp
 TEST_LDFLAGS	:= -ldl
 
 CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra -g
-INCPATH		:= -I$(SDK_DIR) -I.. -I../json
+INCPATH		:= -I$(SDK_DIR) -I$(PIPERCPP_DIR) $(INCPATH)
 
 all:		$(EXAMPLE) $(TEST)
 		./$(TEST)
