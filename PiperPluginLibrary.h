@@ -36,15 +36,14 @@
 #define PIPER_PLUGIN_LIBRARY_H
 
 #include "vamp-support/CountingPluginHandleMapper.h"
-
-#include <vamp-hostsdk/PluginStaticData.h>
-#include <vamp-hostsdk/RequestResponse.h>
+#include "vamp-support/PluginStaticData.h"
+#include "vamp-support/RequestResponse.h"
 
 #include <vector>
 #include <string>
 #include <cstring>
 
-namespace piper {
+namespace piper_vamp_js {
 
 class PiperAdapterInterface;
 
@@ -70,17 +69,16 @@ private:
     std::string requestJsonImpl(std::string req);
     std::string processRawImpl(int, const float *const *, int, int);
 
-    Vamp::HostExt::ListResponse listPluginData() const;
-    Vamp::HostExt::LoadResponse loadPlugin(Vamp::HostExt::LoadRequest r,
-                                           std::string &err) const;
-    Vamp::HostExt::ConfigurationResponse configurePlugin(Vamp::HostExt::
-							 ConfigurationRequest r,
-                                                         std::string &err)
+    piper_vamp::ListResponse listPluginData() const;
+    piper_vamp::LoadResponse loadPlugin(piper_vamp::LoadRequest r,
+                                        std::string &err) const;
+    piper_vamp::ConfigurationResponse configurePlugin(piper_vamp::ConfigurationRequest r,
+                                                      std::string &err)
         const;
 
     // map from pluginKey -> adapter
     std::map<std::string, PiperAdapterInterface *> m_adapters;
-    CountingPluginHandleMapper m_mapper;
+    piper_vamp::CountingPluginHandleMapper m_mapper;
     bool m_useBase64;
 };
 

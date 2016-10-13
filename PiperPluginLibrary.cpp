@@ -39,8 +39,9 @@
 
 using namespace std;
 using namespace json11;
+using namespace piper_vamp;
 
-namespace piper {
+namespace piper_vamp_js { //!!! not good
 
 //!!! too many explicit namespaces here
 
@@ -68,18 +69,18 @@ PiperPluginLibrary::PiperPluginLibrary(vector<PiperAdapterInterface *> pp) :
     }
 }
 
-Vamp::HostExt::ListResponse
+ListResponse
 PiperPluginLibrary::listPluginData() const
 {
-    Vamp::HostExt::ListResponse resp;
+    ListResponse resp;
     for (auto a: m_adapters) {
 	resp.available.push_back(a.second->getStaticData());
     }
     return resp;
 }
 
-Vamp::HostExt::LoadResponse
-PiperPluginLibrary::loadPlugin(Vamp::HostExt::LoadRequest req, string &err) const
+LoadResponse
+PiperPluginLibrary::loadPlugin(LoadRequest req, string &err) const
 {
     string key = req.pluginKey;
     if (m_adapters.find(key) != m_adapters.end()) {
@@ -97,11 +98,11 @@ PiperPluginLibrary::loadPlugin(Vamp::HostExt::LoadRequest req, string &err) cons
     }
 }
 
-Vamp::HostExt::ConfigurationResponse
-PiperPluginLibrary::configurePlugin(Vamp::HostExt::ConfigurationRequest req,
+ConfigurationResponse
+PiperPluginLibrary::configurePlugin(ConfigurationRequest req,
                                       string &err) const
 {
-    for (Vamp::HostExt::PluginConfiguration::ParameterMap::const_iterator i =
+    for (PluginConfiguration::ParameterMap::const_iterator i =
              req.configuration.parameterValues.begin();
          i != req.configuration.parameterValues.end(); ++i) {
         req.plugin->setParameter(i->first, i->second);
@@ -111,7 +112,7 @@ PiperPluginLibrary::configurePlugin(Vamp::HostExt::ConfigurationRequest req,
         req.plugin->selectProgram(req.configuration.currentProgram);
     }
 
-    Vamp::HostExt::ConfigurationResponse response;
+    ConfigurationResponse response;
 
     response.plugin = req.plugin;
 
@@ -147,7 +148,7 @@ PiperPluginLibrary::processRawImpl(int handle,
 
     Vamp::RealTime timestamp(sec, nsec);
 
-    Vamp::HostExt::ProcessResponse resp;
+    ProcessResponse resp;
     resp.plugin = plugin;
     resp.features = plugin->process(inputBuffers, timestamp);
     
@@ -271,7 +272,7 @@ PiperPluginLibrary::requestJsonImpl(string req)
                 }
 
                 if (fbuffers) {
-                    Vamp::HostExt::ProcessResponse resp;
+                    ProcessResponse resp;
                     resp.plugin = req.plugin;
                     resp.features = req.plugin->process(fbuffers, req.timestamp);
                     delete[] fbuffers;
@@ -294,7 +295,7 @@ PiperPluginLibrary::requestJsonImpl(string req)
                 rj = VampJson::fromError("unknown or invalid plugin handle", type, id);
             } else {
 
-                Vamp::HostExt::ProcessResponse resp;
+                FinishResponse resp;
                 resp.plugin = req.plugin;
 
                 // Finish can be called (to unload the plugin) even if

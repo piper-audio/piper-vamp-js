@@ -35,21 +35,21 @@
 #ifndef PIPER_ADAPTER_H
 #define PIPER_ADAPTER_H
 
-#include <vamp-hostsdk/PluginStaticData.h>
-#include <vamp-hostsdk/PluginConfiguration.h>
-#include <vamp-hostsdk/RequestResponse.h>
+#include "vamp-support/PluginStaticData.h"
+#include "vamp-support/PluginConfiguration.h"
+#include "vamp-support/RequestResponse.h"
 
 #include <vamp-hostsdk/PluginInputDomainAdapter.h>
 #include <vamp-hostsdk/PluginBufferingAdapter.h>
 #include <vamp-hostsdk/PluginChannelAdapter.h>
 
-namespace piper {
+namespace piper_vamp_js { //!!! not a good name for this namespace
 
 class PiperAdapterInterface
 {
 public:
-    virtual Vamp::HostExt::PluginStaticData getStaticData() const = 0;
-    virtual Vamp::HostExt::LoadResponse loadPlugin(Vamp::HostExt::LoadRequest r) const = 0;
+    virtual piper_vamp::PluginStaticData getStaticData() const = 0;
+    virtual piper_vamp::LoadResponse loadPlugin(piper_vamp::LoadRequest r) const = 0;
     virtual Vamp::Plugin *createPlugin(float inputSampleRate) const = 0;
 };
 
@@ -66,9 +66,9 @@ protected:
 public:
     virtual Vamp::Plugin *createPlugin(float inputSampleRate) const = 0;
     
-    virtual Vamp::HostExt::PluginStaticData getStaticData() const {
+    virtual piper_vamp::PluginStaticData getStaticData() const {
         Vamp::Plugin *p = createPlugin(44100.f);
-	auto data = Vamp::HostExt::PluginStaticData::fromPlugin
+	auto data = piper_vamp::PluginStaticData::fromPlugin
 	    (m_soname + ":" + p->getIdentifier(),
 	     {}, //!!! todo: category - tricky one that
 	     p);
@@ -76,8 +76,7 @@ public:
         return data;
     }
 
-    virtual Vamp::HostExt::LoadResponse loadPlugin(Vamp::HostExt::
-						   LoadRequest r) const {
+    virtual piper_vamp::LoadResponse loadPlugin(piper_vamp::LoadRequest r) const {
 	
 	// We assume the caller has guaranteed that the request is for
 	// the correct plugin (so we don't have to check the plugin
@@ -99,10 +98,10 @@ public:
 	    p = new Vamp::HostExt::PluginChannelAdapter(p);
 	}
 
-	Vamp::HostExt::LoadResponse response;
+	piper_vamp::LoadResponse response;
 	response.plugin = p;
 
-	response.staticData = Vamp::HostExt::PluginStaticData::fromPlugin
+	response.staticData = piper_vamp::PluginStaticData::fromPlugin
 	    (m_soname + ":" + p->getIdentifier(),
 	     {}, //!!! todo: category - tricky one that
 	     p);
@@ -112,7 +111,7 @@ public:
 	    defaultChannels = p->getMinChannelCount();
 	}
     
-	response.defaultConfiguration = Vamp::HostExt::PluginConfiguration::fromPlugin
+	response.defaultConfiguration = piper_vamp::PluginConfiguration::fromPlugin
 	    (p,
 	     defaultChannels,
 	     p->getPreferredStepSize(),

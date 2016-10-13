@@ -42,8 +42,8 @@
 #include "examples/AmplitudeFollower.h"
 #include "examples/PowerSpectrum.h"
 
-using piper::PiperAdapter;
-using piper::PiperPluginLibrary;
+using piper_vamp_js::PiperAdapter;
+using piper_vamp_js::PiperPluginLibrary;
 
 static std::string soname("vamp-example-plugins");
 
