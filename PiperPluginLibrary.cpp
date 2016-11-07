@@ -70,10 +70,24 @@ PiperPluginLibrary::PiperPluginLibrary(vector<PiperAdapterInterface *> pp) :
 }
 
 ListResponse
-PiperPluginLibrary::listPluginData() const
+PiperPluginLibrary::listPluginData(ListRequest req) const
 {
+    bool filtered = !req.from.empty();
     ListResponse resp;
     for (auto a: m_adapters) {
+        if (filtered) {
+            auto n = a.second->getLibraryName();
+            bool found = false;
+            for (const auto &f: req.from) {
+                if (f == n) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                continue;
+            }
+        }
 	resp.available.push_back(a.second->getStaticData());
     }
     return resp;
@@ -189,8 +203,15 @@ PiperPluginLibrary::requestJsonImpl(string req)
     switch (type) {
 
     case RRType::List:
-        rj = VampJson::fromRpcResponse_List(listPluginData(), id);
+    {
+        auto req = VampJson::toRpcRequest_List(j, err);
+        if (err != "") {
+            rj = VampJson::fromError(err, type, id);
+        } else {
+            rj = VampJson::fromRpcResponse_List(listPluginData(req), id);
+        }
         break;
+    }
 
     case RRType::Load:
     {

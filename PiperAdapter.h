@@ -48,6 +48,7 @@ namespace piper_vamp_js { //!!! not a good name for this namespace
 class PiperAdapterInterface
 {
 public:
+    virtual std::string getLibraryName() const = 0;
     virtual piper_vamp::PluginStaticData getStaticData() const = 0;
     virtual piper_vamp::LoadResponse loadPlugin(piper_vamp::LoadRequest r) const = 0;
     virtual Vamp::Plugin *createPlugin(float inputSampleRate) const = 0;
@@ -65,8 +66,12 @@ protected:
     
 public:
     virtual Vamp::Plugin *createPlugin(float inputSampleRate) const = 0;
+
+    virtual std::string getLibraryName() const override {
+        return m_soname;
+    }
     
-    virtual piper_vamp::PluginStaticData getStaticData() const {
+    virtual piper_vamp::PluginStaticData getStaticData() const override {
         Vamp::Plugin *p = createPlugin(44100.f);
 	auto data = piper_vamp::PluginStaticData::fromPlugin
 	    (m_soname + ":" + p->getIdentifier(),
@@ -76,7 +81,8 @@ public:
         return data;
     }
 
-    virtual piper_vamp::LoadResponse loadPlugin(piper_vamp::LoadRequest r) const {
+    virtual piper_vamp::LoadResponse loadPlugin(piper_vamp::LoadRequest r)
+        const override {
 	
 	// We assume the caller has guaranteed that the request is for
 	// the correct plugin (so we don't have to check the plugin
@@ -130,7 +136,7 @@ class PiperAdapter : public PiperAdapterBase<P>
 public:
     PiperAdapter(std::string libname) : PiperAdapterBase<P>(libname) { }
     
-    virtual Vamp::Plugin *createPlugin(float inputSampleRate) const {
+    virtual Vamp::Plugin *createPlugin(float inputSampleRate) const override {
         return new P(inputSampleRate);
     }
 };

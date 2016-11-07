@@ -69,7 +69,7 @@ private:
     std::string requestJsonImpl(std::string req);
     std::string processRawImpl(int, const float *const *, int, int);
 
-    piper_vamp::ListResponse listPluginData() const;
+    piper_vamp::ListResponse listPluginData(piper_vamp::ListRequest r) const;
     piper_vamp::LoadResponse loadPlugin(piper_vamp::LoadRequest r,
                                         std::string &err) const;
     piper_vamp::ConfigurationResponse configurePlugin(piper_vamp::ConfigurationRequest r,
