@@ -33,9 +33,9 @@
 
 #include "VampTestPlugin.h"
 
-using piper::PiperAdapter;
-using piper::PiperAdapterBase;
-using piper::PiperPluginLibrary;
+using piper_vamp_js::PiperAdapter;
+using piper_vamp_js::PiperAdapterBase;
+using piper_vamp_js::PiperPluginLibrary;
 
 static std::string soname("vamp-test-plugin");
 
