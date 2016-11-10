@@ -39,11 +39,15 @@ CQ_SOURCES	:= \
 		$(CQSRC_DIR)/dsp/KaiserWindow.cpp \
 		$(CQSRC_DIR)/dsp/MathUtilities.cpp \
 		$(CQSRC_DIR)/dsp/Resampler.cpp \
-		$(CQSRC_DIR)/dsp/SincWindow.cpp \
+		$(CQSRC_DIR)/dsp/SincWindow.cpp
+
+KFFT_SOURCES    := \
 		$(KFFT_DIR)/kiss_fft.c \
 		$(KFFT_DIR)/tools/kiss_fftr.c
 
 PLUGIN_SOURCES	:= $(PLUGIN_SOURCES) $(BQVEC_SOURCES) $(FD_SOURCES) $(CQ_SOURCES)
+
+PLUGIN_C_SOURCES   := $(KFFT_SOURCES)
 
 MODULE_SOURCE	:= silvet.cpp
 

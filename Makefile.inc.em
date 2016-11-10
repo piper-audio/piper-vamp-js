@@ -1,20 +1,24 @@
 
-ADAPTER_HEADERS	:= PiperAdapter.h PiperPluginLibrary.h 
-ADAPTER_SOURCES	:= PiperPluginLibrary.cpp
-
+SRC_DIR		:= src
 SDK_DIR		:= ../vamp-plugin-sdk
 PIPERCPP_DIR    := ../piper-cpp
 
+ADAPTER_HEADERS	:= \
+		$(SRC_DIR)/PiperAdapter.h \
+		$(SRC_DIR)/PiperPluginLibrary.h 
+ADAPTER_SOURCES	:= \
+		$(SRC_DIR)/PiperPluginLibrary.cpp
+
 SDK_SOURCES	:= \
-        	$(SDK_DIR)/src/vamp-hostsdk/PluginBufferingAdapter.cpp \
+		$(SDK_DIR)/src/vamp-hostsdk/PluginBufferingAdapter.cpp \
 		$(SDK_DIR)/src/vamp-hostsdk/PluginChannelAdapter.cpp \
-        	$(SDK_DIR)/src/vamp-hostsdk/PluginHostAdapter.cpp \
-        	$(SDK_DIR)/src/vamp-hostsdk/PluginInputDomainAdapter.cpp \
-        	$(SDK_DIR)/src/vamp-hostsdk/PluginLoader.cpp \
-        	$(SDK_DIR)/src/vamp-hostsdk/PluginSummarisingAdapter.cpp \
-        	$(SDK_DIR)/src/vamp-hostsdk/PluginWrapper.cpp \
-        	$(SDK_DIR)/src/vamp-hostsdk/RealTime.cpp \
-        	$(SDK_DIR)/src/vamp-hostsdk/Files.cpp \
+		$(SDK_DIR)/src/vamp-hostsdk/PluginHostAdapter.cpp \
+		$(SDK_DIR)/src/vamp-hostsdk/PluginInputDomainAdapter.cpp \
+		$(SDK_DIR)/src/vamp-hostsdk/PluginLoader.cpp \
+		$(SDK_DIR)/src/vamp-hostsdk/PluginSummarisingAdapter.cpp \
+		$(SDK_DIR)/src/vamp-hostsdk/PluginWrapper.cpp \
+		$(SDK_DIR)/src/vamp-hostsdk/RealTime.cpp \
+		$(SDK_DIR)/src/vamp-hostsdk/Files.cpp \
 		$(SDK_DIR)/src/vamp-sdk/PluginAdapter.cpp \
 		$(SDK_DIR)/src/vamp-sdk/RealTime.cpp \
 		$(SDK_DIR)/src/vamp-sdk/FFT.cpp
@@ -36,6 +40,7 @@ EMFLAGS		:= \
 		$(EMFLAGS)
 
 CXX_SOURCES	:= $(MODULE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(SDK_SOURCES) $(OTHER_SOURCES)
+C_SOURCES	:= $(PLUGIN_C_SOURCES)
 LDFLAGS		:= $(EMFLAGS)
 
 CXX		:= em++
@@ -46,14 +51,25 @@ OPTFLAGS	:= -O3 -ffast-math
 
 DEFINES		:= $(DEFINES)
 
-INCPATH		:= -I$(SDK_DIR) -I$(PIPERCPP_DIR) $(INCPATH)
+INCPATH		:= -I$(SRC_DIR) -I$(SDK_DIR) -I$(PIPERCPP_DIR) $(INCPATH)
 
 CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCPATH)
 CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCPATH)
 
+OBJDIR          := o
+
 CXX_OBJECTS	:= $(CXX_SOURCES:.cpp=.o)
 C_OBJECTS	:= $(C_SOURCES:.c=.o)
 OBJECTS		:= $(CXX_OBJECTS) $(C_OBJECTS)
+OBJECTS         := $(addprefix $(OBJDIR)/,$(realpath $(OBJECTS)))
+
+o/%.o:            %.cpp
+		mkdir -p $(dir $@)
+		$(CXX) $(INCPATH) $(CXXFLAGS) -o $@ $<
+
+o/%.o:            %.c
+		mkdir -p $(dir $@)
+		$(CC) $(INCPATH) $(CFLAGS) -o $@ $<
 
 all:		$(MODULE)
 

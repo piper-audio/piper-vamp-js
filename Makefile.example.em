@@ -11,6 +11,6 @@ PLUGIN_SOURCES	:= \
 		$(EXAMPLE_DIR)/AmplitudeFollower.cpp \
 		$(EXAMPLE_DIR)/PowerSpectrum.cpp
 
-MODULE_SOURCE	:= example.cpp
+MODULE_SOURCE	:= examples/vamp-example-plugins.cpp
 
 include Makefile.inc.em
