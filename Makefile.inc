@@ -15,9 +15,11 @@ help:
 		@echo "Note: when switching from one target to another, make clean first"
 		@echo
 
-SRC_DIR		:= src
-SDK_DIR		:= ../vamp-plugin-sdk
-PIPERCPP_DIR    := ../piper-cpp
+MY_DIR		:= $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+
+SRC_DIR		:= $(MY_DIR)/src
+SDK_DIR		:= $(MY_DIR)/../vamp-plugin-sdk
+PIPERCPP_DIR    := $(MY_DIR)/../piper-cpp
 
 ADAPTER_HEADERS	:= \
 		$(SRC_DIR)/PiperAdapter.h \
@@ -59,7 +61,7 @@ EMFLAGS		:= \
 		$(EMFLAGS)
 
 CXX_SOURCES	:= $(MODULE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(SDK_SOURCES) $(OTHER_SOURCES)
-C_SOURCES	:= $(PLUGIN_C_SOURCES)
+C_SOURCES	:= $(PLUGIN_C_SOURCES) $(C_SOURCES)
 
 #OPTFLAGS	:= -g3
 OPTFLAGS	:= -O3 -ffast-math
@@ -96,7 +98,7 @@ o/%.o:            %.c
 		$(CC) -c $(INCPATH) $(CFLAGS) -o $@ $<
 
 $(EM_MODULE):	$(OBJECTS)
-		$(CXX) $(OPTFLAGS) $(EMFLAGS) -o $@ $^ $(LDFLAGS) && \
+		$(CXX) $(OPTFLAGS) -o $@ $^ $(LDFLAGS) && \
 		( echo "if (typeof process === 'object') module.exports=$(MODULE_SYMBOL);" >> $(EM_MODULE) )
 
 $(SO_MODULE):	$(OBJECTS)

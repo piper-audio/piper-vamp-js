@@ -1,7 +1,7 @@
 
 MODULE_NAME	:= VampExamplePlugins
 
-EXAMPLE_DIR	:= ../vamp-plugin-sdk/examples
+EXAMPLE_DIR	:= ../../vamp-plugin-sdk/examples
 
 PLUGIN_SOURCES	:= \
 		$(EXAMPLE_DIR)/ZeroCrossing.cpp \
@@ -11,6 +11,6 @@ PLUGIN_SOURCES	:= \
 		$(EXAMPLE_DIR)/AmplitudeFollower.cpp \
 		$(EXAMPLE_DIR)/PowerSpectrum.cpp
 
-MODULE_SOURCE	:= examples/vamp-example-plugins.cpp
+MODULE_SOURCE	:= vamp-example-plugins.cpp
 
-include Makefile.inc
+include ../Makefile.inc

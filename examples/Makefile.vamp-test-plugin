@@ -1,7 +1,7 @@
 
 MODULE_NAME	:= VampTestPlugin
 
-TESTPLUGIN_DIR	:= ../vamp-test-plugin
+TESTPLUGIN_DIR	:= ../../vamp-test-plugin
 
 INCPATH		:= -I$(TESTPLUGIN_DIR)
 
@@ -10,4 +10,4 @@ PLUGIN_SOURCES	:= \
 
 MODULE_SOURCE	:= vamp-test-plugin.cpp
 
-include Makefile.inc.em
+include ../Makefile.inc
