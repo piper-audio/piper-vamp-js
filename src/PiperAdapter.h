@@ -65,8 +65,6 @@ protected:
     PiperAdapterBase(std::string libname) : m_soname(libname) { }
     
 public:
-    virtual Vamp::Plugin *createPlugin(float inputSampleRate) const = 0;
-
     virtual std::string getLibraryName() const override {
         return m_soname;
     }
