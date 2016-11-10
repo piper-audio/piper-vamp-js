@@ -13,4 +13,4 @@ PLUGIN_SOURCES	:= \
 
 MODULE_SOURCE	:= examples/vamp-example-plugins.cpp
 
-include Makefile.inc.em
+include Makefile.inc

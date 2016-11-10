@@ -1,4 +1,20 @@
 
+default:        help
+
+help:
+		@echo
+		@echo "Supported make targets:"
+		@echo
+		@echo "$$ make em"
+		@echo "  - build Javascript module using Emscripten"
+		@echo "$$ make linux"
+		@echo "  - build native-code module on Linux (mostly for testing)"
+		@echo "$$ make clean"
+		@echo "  - remove intermediate build files, but not targets"
+		@echo
+		@echo "Note: when switching from one target to another, make clean first"
+		@echo
+
 SRC_DIR		:= src
 SDK_DIR		:= ../vamp-plugin-sdk
 PIPERCPP_DIR    := ../piper-cpp
@@ -26,25 +42,24 @@ SDK_SOURCES	:= \
 OTHER_SOURCES	:= \
 		$(PIPERCPP_DIR)/json11/json11.cpp
 
-MODULE_EXT	:= .js
-MODULE		:= $(MODULE_NAME)$(MODULE_EXT)
-MODULE_SYMBOL	:= $(MODULE_NAME)Module
+EM_MODULE_EXT	:= .js
+EM_MODULE	:= $(MODULE_NAME)$(EM_MODULE_EXT)
+EM_MODULE_SYMBOL	:= $(MODULE_NAME)Module
+
+SO_MODULE_EXT	:= .so
+SO_MODULE	:= $(MODULE_NAME)$(SO_MODULE_EXT)
 
 EMFLAGS		:= \
 		--memory-init-file 0 \
 		-s MODULARIZE=1 \
 		-s NO_FILESYSTEM=1 \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=1 \
-	    	-s EXPORT_NAME="'$(MODULE_SYMBOL)'" \
+	    	-s EXPORT_NAME="'$(EM_MODULE_SYMBOL)'" \
 	    	-s EXPORTED_FUNCTIONS="['_piperRequestJson','_piperProcessRaw','_piperFreeJson']" \
 		$(EMFLAGS)
 
 CXX_SOURCES	:= $(MODULE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(SDK_SOURCES) $(OTHER_SOURCES)
 C_SOURCES	:= $(PLUGIN_C_SOURCES)
-LDFLAGS		:= $(EMFLAGS)
-
-CXX		:= em++
-CC		:= emcc
 
 #OPTFLAGS	:= -g3
 OPTFLAGS	:= -O3 -ffast-math
@@ -53,8 +68,17 @@ DEFINES		:= $(DEFINES)
 
 INCPATH		:= -I$(SRC_DIR) -I$(SDK_DIR) -I$(PIPERCPP_DIR) $(INCPATH)
 
-CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCPATH)
-CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCPATH)
+em:	$(EM_MODULE)
+em:	CXX		:= em++
+em:	CC		:= emcc
+em:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCPATH)
+em:	CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCPATH)
+em:	LDFLAGS		:= $(EMFLAGS)
+
+linux:	$(SO_MODULE)
+linux:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(INCPATH)
+linux:	CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(INCPATH)
+linux:	LDFLAGS		:= -shared -Wl,-Bsymbolic -Wl,-soname=$(SO_MODULE) -Wl,-z,defs -Wl,--version-script=$(SRC_DIR)/piper.map -ldl
 
 OBJDIR          := o
 
@@ -65,17 +89,18 @@ OBJECTS         := $(addprefix $(OBJDIR)/,$(realpath $(OBJECTS)))
 
 o/%.o:            %.cpp
 		mkdir -p $(dir $@)
-		$(CXX) $(INCPATH) $(CXXFLAGS) -o $@ $<
+		$(CXX) -c $(INCPATH) $(CXXFLAGS) -o $@ $<
 
 o/%.o:            %.c
 		mkdir -p $(dir $@)
-		$(CC) $(INCPATH) $(CFLAGS) -o $@ $<
+		$(CC) -c $(INCPATH) $(CFLAGS) -o $@ $<
 
-all:		$(MODULE)
+$(EM_MODULE):	$(OBJECTS)
+		$(CXX) $(OPTFLAGS) $(EMFLAGS) -o $@ $^ $(LDFLAGS) && \
+		( echo "if (typeof process === 'object') module.exports=$(MODULE_SYMBOL);" >> $(EM_MODULE) )
 
-$(MODULE):	$(OBJECTS)
-		$(CXX) $(OPTFLAGS) $(EMFLAGS) -o $(MODULE) $(OBJECTS) $(MODULE_LDFLAGS) && \
-		( echo "if (typeof process === 'object') module.exports=$(MODULE_SYMBOL);" >> $(MODULE) )
+$(SO_MODULE):	$(OBJECTS)
+		$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
-		rm -f $(MODULE) $(OBJECTS)
+		rm -f $(OBJECTS)
