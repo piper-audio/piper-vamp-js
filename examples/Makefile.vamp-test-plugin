@@ -3,7 +3,7 @@ MODULE_NAME	:= VampTestPlugin
 
 TESTPLUGIN_DIR	:= ../../vamp-test-plugin
 
-INCPATH		:= -I$(TESTPLUGIN_DIR)
+INCLUDES	:= -I$(TESTPLUGIN_DIR)
 
 PLUGIN_SOURCES	:= \
 		$(TESTPLUGIN_DIR)/VampTestPlugin.cpp
