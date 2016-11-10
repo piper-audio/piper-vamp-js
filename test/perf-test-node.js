@@ -1,6 +1,6 @@
 "use strict";
 
-var VampExamplePlugins = require("./VampExamplePlugins");
+var VampExamplePlugins = require("../examples/VampExamplePlugins");
 var base64 = require("./base64");
 var exampleModule = VampExamplePlugins();
 
