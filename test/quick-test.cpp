@@ -6,7 +6,7 @@ using namespace std;
 
 int main(int, char **)
 {
-    string example = "./example.so";
+    string example = "../examples/VampExamplePlugins.so";
     
     void *lib = dlopen(example.c_str(), RTLD_LAZY | RTLD_LOCAL);
     if (!lib) {

@@ -8,7 +8,7 @@ help:
 		@echo "$$ make em"
 		@echo "  - build Javascript module using Emscripten"
 		@echo "$$ make linux"
-		@echo "  - build native-code module on Linux (mostly for testing)"
+		@echo "  - build native-code module on Linux (currently this is mostly for testing)"
 		@echo "$$ make clean"
 		@echo "  - remove intermediate build files, but not targets"
 		@echo "$$ make distclean"
