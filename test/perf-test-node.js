@@ -1,8 +1,10 @@
 "use strict";
 
-var VampExamplePlugins = require("../examples/VampExamplePlugins");
+var extractorName = "VampExamplePlugins";
+var pluginKey = "vamp-example-plugins:zerocrossing";
+var extractor = require("../examples/" + extractorName);
 var base64 = require("./base64");
-var exampleModule = VampExamplePlugins();
+var extractorModule = extractor();
 
 // It is possible to declare both parameters and return values as
 // "string", in which case Emscripten will take care of
@@ -16,15 +18,15 @@ var exampleModule = VampExamplePlugins();
 // numbers) means we can manage the Emscripten heap memory however we
 // want in our request wrapper function below.
 
-var piperRequestJson = exampleModule.cwrap(
+var piperRequestJson = extractorModule.cwrap(
     'piperRequestJson', 'number', ['number']
 );
 
-var piperProcessRaw = exampleModule.cwrap(
+var piperProcessRaw = extractorModule.cwrap(
     "piperProcessRaw", "number", ["number", "number", "number", "number"]
 );
 
-var piperFreeJson = exampleModule.cwrap(
+var piperFreeJson = extractorModule.cwrap(
     'piperFreeJson', 'void', ['number']
 );
 
@@ -41,14 +43,14 @@ function processRaw(request) {
     const nChannels = request.processInput.inputBuffers.length;
     const nFrames = request.processInput.inputBuffers[0].length;
 
-    const buffersPtr = exampleModule._malloc(nChannels * 4);
+    const buffersPtr = extractorModule._malloc(nChannels * 4);
     const buffers = new Uint32Array(
-        exampleModule.HEAPU8.buffer, buffersPtr, nChannels);
+        extractorModule.HEAPU8.buffer, buffersPtr, nChannels);
 
     for (let i = 0; i < nChannels; ++i) {
-        const framesPtr = exampleModule._malloc(nFrames * 4);
+        const framesPtr = extractorModule._malloc(nFrames * 4);
         const frames = new Float32Array(
-            exampleModule.HEAPU8.buffer, framesPtr, nFrames);
+            extractorModule.HEAPU8.buffer, framesPtr, nFrames);
         frames.set(request.processInput.inputBuffers[i]);
         buffers[i] = framesPtr;
     }
@@ -60,11 +62,11 @@ function processRaw(request) {
         request.processInput.timestamp.n);
     
     for (let i = 0; i < nChannels; ++i) {
-        exampleModule._free(buffers[i]);
+        extractorModule._free(buffers[i]);
     }
-    exampleModule._free(buffersPtr);
+    extractorModule._free(buffersPtr);
 
-    const responseJstr = exampleModule.Pointer_stringify(responseJson);
+    const responseJstr = extractorModule.Pointer_stringify(responseJson);
     const response = JSON.parse(responseJstr);
     
     piperFreeJson(responseJson);
@@ -90,7 +92,7 @@ function frame2timestamp(frame, rate) {
 
 function request(jsonStr) {
     note("Request JSON = " + jsonStr);
-    var m = exampleModule;
+    var m = extractorModule;
     // Inspection reveals that intArrayFromString converts the string
     // from utf16 to utf8, which is what we want (though the docs
     // don't mention this). Note the *Cstr values are Emscripten heap
@@ -151,7 +153,7 @@ function test() {
     const rate = 44100;
     
     comment("Loading zero crossings plugin...");
-    let result = request('{"method":"load","params": {"key":"vamp-example-plugins:zerocrossing","inputSampleRate":' + rate + ',"adapterFlags":["AdaptAllSafe"]}}');
+    let result = request('{"method":"load","params": {"key":"' + pluginKey + '","inputSampleRate":' + rate + ',"adapterFlags":["AdaptAllSafe"]}}');
 
     const blockSize = 1024;
 
