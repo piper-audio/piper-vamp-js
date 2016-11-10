@@ -11,6 +11,8 @@ help:
 		@echo "  - build native-code module on Linux (mostly for testing)"
 		@echo "$$ make clean"
 		@echo "  - remove intermediate build files, but not targets"
+		@echo "$$ make distclean"
+		@echo "  - remove all targets and intermediate build files"
 		@echo
 		@echo "Note: when switching from one target to another, make clean first"
 		@echo
@@ -86,8 +88,8 @@ OBJDIR          := o
 
 CXX_OBJECTS	:= $(CXX_SOURCES:.cpp=.o)
 C_OBJECTS	:= $(C_SOURCES:.c=.o)
-OBJECTS		:= $(CXX_OBJECTS) $(C_OBJECTS)
-OBJECTS         := $(addprefix $(OBJDIR)/,$(realpath $(OBJECTS)))
+ALL_OBJECTS	:= $(CXX_OBJECTS) $(C_OBJECTS)
+OBJECTS         := $(addprefix $(OBJDIR)/,$(abspath $(ALL_OBJECTS)))
 
 o/%.o:            %.cpp
 		mkdir -p $(dir $@)
@@ -99,10 +101,13 @@ o/%.o:            %.c
 
 $(EM_MODULE):	$(OBJECTS)
 		$(CXX) $(OPTFLAGS) -o $@ $^ $(LDFLAGS) && \
-		( echo "if (typeof process === 'object') module.exports=$(MODULE_SYMBOL);" >> $(EM_MODULE) )
+		( echo "if (typeof process === 'object') module.exports=$(EM_MODULE_SYMBOL);" >> $(EM_MODULE) )
 
 $(SO_MODULE):	$(OBJECTS)
 		$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
 		rm -f $(OBJECTS)
+
+distclean:	clean
+		rm -f $(EM_MODULE) $(SO_MODULE)
