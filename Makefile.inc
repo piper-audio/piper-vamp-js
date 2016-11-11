@@ -8,7 +8,7 @@ help:
 		@echo "$$ make em"
 		@echo "  - build Javascript module using Emscripten"
 		@echo "$$ make test"
-		@echo "  - run simple load test of Javascript module using node.js"
+		@echo "  - build and run simple load test of Javascript module using node.js"
 		@echo "$$ make linux"
 		@echo "  - build native-code module on Linux (currently this is mostly for testing)"
 		@echo "$$ make clean"
@@ -71,8 +71,7 @@ C_SOURCES	:= $(PLUGIN_C_SOURCES) $(C_SOURCES)
 OPTFLAGS	:= -O3 -ffast-math
 
 DEFINES		:= $(DEFINES)
-
-INCLUDES		:= -I$(SRC_DIR) -I$(SDK_DIR) -I$(PIPERCPP_DIR) $(INCLUDES)
+INCLUDES	:= -I$(SRC_DIR) -I$(SDK_DIR) -I$(PIPERCPP_DIR) $(INCLUDES)
 
 em:	$(EM_MODULE)
 em:	CXX		:= em++

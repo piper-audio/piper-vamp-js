@@ -32,15 +32,14 @@
     authorization.
 */
 
-#include "PiperAdapter.h"
-#include "PiperPluginLibrary.h"
+#include "PiperExport.h"
 
-#include "examples/ZeroCrossing.h"
-#include "examples/SpectralCentroid.h"
-#include "examples/PercussionOnsetDetector.h"
-#include "examples/FixedTempoEstimator.h"
-#include "examples/AmplitudeFollower.h"
-#include "examples/PowerSpectrum.h"
+#include "ZeroCrossing.h"
+#include "SpectralCentroid.h"
+#include "PercussionOnsetDetector.h"
+#include "FixedTempoEstimator.h"
+#include "AmplitudeFollower.h"
+#include "PowerSpectrum.h"
 
 using piper_vamp_js::PiperAdapter;
 using piper_vamp_js::PiperPluginLibrary;
@@ -63,22 +62,5 @@ static PiperPluginLibrary library({
     &powerSpectrumAdapter
 });
 
-extern "C" {
-
-const char *piperRequestJson(const char *request) {
-    return library.requestJson(request);
-}
-
-const char *piperProcessRaw(int handle,
-                              const float *const *inputBuffers,
-                              int sec,
-                              int nsec) {
-    return library.processRaw(handle, inputBuffers, sec, nsec);
-}
-    
-void piperFreeJson(const char *json) {
-    return library.freeJson(json);
-}
-
-}
+PIPER_EXPORT_LIBRARY(library);
 
