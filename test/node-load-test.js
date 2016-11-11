@@ -156,6 +156,8 @@ function checkSuccess(response) {
 
 function test() {
 
+    let start = (new Date()).getTime();
+
     const rate = 44100;
 
     note("Listing plugins...");
@@ -241,6 +243,9 @@ function test() {
     }
     
     note("Done, total number of features across all outputs = " + featureCount);
+
+    let finish = (new Date()).getTime();
+    note("Total time taken " + (finish - start) + " ms");
 }
 
 test();
