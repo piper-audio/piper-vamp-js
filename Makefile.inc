@@ -7,6 +7,8 @@ help:
 		@echo
 		@echo "$$ make em"
 		@echo "  - build Javascript module using Emscripten"
+		@echo "$$ make test"
+		@echo "  - run simple load test of Javascript module using node.js"
 		@echo "$$ make linux"
 		@echo "  - build native-code module on Linux (currently this is mostly for testing)"
 		@echo "$$ make clean"
@@ -105,6 +107,9 @@ $(EM_MODULE):	$(OBJECTS)
 
 $(SO_MODULE):	$(OBJECTS)
 		$(CXX) -o $@ $^ $(LDFLAGS)
+
+test:		em
+		node $(MY_DIR)/test/node-load-test.js $(shell pwd)/$(EM_MODULE)
 
 clean:
 		rm -f $(OBJECTS)
