@@ -114,12 +114,27 @@ public:
 	if (p->getMinChannelCount() == p->getMaxChannelCount()) {
 	    defaultChannels = p->getMinChannelCount();
 	}
-    
-	response.defaultConfiguration = piper_vamp::PluginConfiguration::fromPlugin
+
+        int defaultBlockSize = p->getPreferredBlockSize();
+        int defaultStepSize = p->getPreferredStepSize();
+
+        if (defaultBlockSize == 0) {
+            defaultBlockSize = 1024;
+        }
+        if (defaultStepSize == 0) {
+            if (p->getInputDomain() == Vamp::Plugin::FrequencyDomain) {
+                defaultStepSize = defaultBlockSize / 2;
+            } else {
+                defaultStepSize = defaultBlockSize;
+            }
+        }
+        
+	response.defaultConfiguration =
+            piper_vamp::PluginConfiguration::fromPlugin
 	    (p,
 	     defaultChannels,
-	     p->getPreferredStepSize(),
-	     p->getPreferredBlockSize());
+	     defaultStepSize,
+             defaultBlockSize);
     
 	return response;
     }
