@@ -4,14 +4,19 @@ function note(blah) {
     console.log(blah);
 }
 
-if (process.argv.length < 4) {
-    note("\nUsage: " + process.argv[0] + " <LibraryPath> <pluginKey>");
+if (process.argv.length < 3 || process.argv.length > 4) {
+    note("\nUsage: " + process.argv[0] + " <librarypath> [<pluginkey>]");
+    note("e.g. " + process.argv[0] + " ./VampExamplePlugins.js");
     note("e.g. " + process.argv[0] + " ./VampExamplePlugins.js vamp-example-plugins:zerocrossing");
-    throw "Wrong number of command-line args (2 expected)"
+    throw "Wrong number of command-line args (1 or 2 expected)"
 }
 
 var libraryPath = process.argv[2];
-var pluginKey = process.argv[3];
+
+var pluginKey = "";
+if (process.argv.length > 3) {
+    pluginKey = process.argv[3];
+}
 
 var base64 = require("./base64");
 
@@ -141,12 +146,34 @@ function responseToFeatureSet(response) {
     return features;
 }
 
+function checkSuccess(response) {
+    if (response.error) {
+	console.log("Request type " + response.method + " failed: " +
+		    response.error.message);
+	throw response.error.message;
+    }
+}
+
 function test() {
 
+    let start = (new Date()).getTime();
+
     const rate = 44100;
-    
-    note("Loading plugin \"" + pluginKey + "\"...");
+
+    note("Listing plugins...");
     let response = request({
+	method: "list"
+    });
+    checkSuccess(response);
+
+    if (pluginKey === "") {
+	pluginKey = response.result.available[0].key;
+	note("Loading first plugin \"" + pluginKey + "\"...");
+    } else {
+	note("Loading requested plugin \"" + pluginKey + "\"...");
+    }
+    
+    response = request({
         method: "load",
         params: {
             key: pluginKey,
@@ -154,8 +181,10 @@ function test() {
             adapterFlags: ["AdaptAllSafe"]
         }
     });
+    checkSuccess(response);
 
-    const blockSize = 1024;
+    const blockSize = response.result.defaultConfiguration.blockSize;
+    const stepSize = response.result.defaultConfiguration.stepSize;
 
     response = request({
         method: "configure",
@@ -163,11 +192,12 @@ function test() {
             handle: 1,
             configuration: {
                 blockSize: blockSize,
-                channelCount: 1,
-                stepSize: blockSize
+                stepSize: stepSize,
+                channelCount: 1
             }
         }
     });
+    checkSuccess(response);
 
     const nblocks = 1000;
 
@@ -196,7 +226,6 @@ function test() {
         for (let featureList of features.values()) {
             featureCount += featureList.length;
         }
-        console.log(i);
     }
 
     note("Cleaning up the plugin and getting any remaining features...");
@@ -206,6 +235,7 @@ function test() {
             handle: 1
         }
     });
+    checkSuccess(response);
 
     let features = responseToFeatureSet(response);
     for (let featureList of features.values()) {
@@ -213,6 +243,9 @@ function test() {
     }
     
     note("Done, total number of features across all outputs = " + featureCount);
+
+    let finish = (new Date()).getTime();
+    note("Total time taken " + (finish - start) + " ms");
 }
 
 test();

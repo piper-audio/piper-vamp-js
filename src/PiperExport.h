@@ -1,7 +1,7 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 
 /*
-    Piper
+    Piper Vamp JSON Adapter
 
     Centre for Digital Music, Queen Mary, University of London.
     Copyright 2015-2016 QMUL.
@@ -32,53 +32,37 @@
     authorization.
 */
 
+#ifndef PIPER_EXPORT_H
+#define PIPER_EXPORT_H
+
+#ifdef _VAMP_IN_PLUGINSDK
+#error You must include PiperExport.h before any other files that use the Vamp SDK
+#endif
+
+// Include all the Piper headers that an export program may need here:
+// for a simple Vamp plugin library, this one should be the only Piper
+// #include
+
 #include "PiperAdapter.h"
 #include "PiperPluginLibrary.h"
 
-#include "examples/ZeroCrossing.h"
-#include "examples/SpectralCentroid.h"
-#include "examples/PercussionOnsetDetector.h"
-#include "examples/FixedTempoEstimator.h"
-#include "examples/AmplitudeFollower.h"
-#include "examples/PowerSpectrum.h"
+// Convenience macros for the usual case with a static
+// PiperPluginLibrary object to export C wrappers for
 
-using piper_vamp_js::PiperAdapter;
-using piper_vamp_js::PiperPluginLibrary;
+#define PIPER_EXPORT_LIBRARY(library)					\
+    extern "C" {							\
+	const char *piperRequestJson(const char *request) {		\
+	    return library.requestJson(request);			\
+	}								\
+	const char *piperProcessRaw(int handle,				\
+				    const float *const *inputBuffers,	\
+				    int sec,				\
+				    int nsec) {				\
+	    return library.processRaw(handle, inputBuffers, sec, nsec);	\
+	}								\
+	void piperFreeJson(const char *json) {				\
+	    return library.freeJson(json);				\
+	}								\
+    }
 
-static std::string soname("vamp-example-plugins");
-
-static PiperAdapter<ZeroCrossing> zeroCrossingAdapter(soname);
-static PiperAdapter<SpectralCentroid> spectralCentroidAdapter(soname);
-static PiperAdapter<PercussionOnsetDetector> percussionOnsetAdapter(soname);
-static PiperAdapter<FixedTempoEstimator> fixedTempoAdapter(soname);
-static PiperAdapter<AmplitudeFollower> amplitudeAdapter(soname);
-static PiperAdapter<PowerSpectrum> powerSpectrumAdapter(soname);
-
-static PiperPluginLibrary library({
-    &zeroCrossingAdapter,
-    &spectralCentroidAdapter,
-    &percussionOnsetAdapter,
-    &fixedTempoAdapter,
-    &amplitudeAdapter,
-    &powerSpectrumAdapter
-});
-
-extern "C" {
-
-const char *piperRequestJson(const char *request) {
-    return library.requestJson(request);
-}
-
-const char *piperProcessRaw(int handle,
-                              const float *const *inputBuffers,
-                              int sec,
-                              int nsec) {
-    return library.processRaw(handle, inputBuffers, sec, nsec);
-}
-    
-void piperFreeJson(const char *json) {
-    return library.freeJson(json);
-}
-
-}
-
+#endif

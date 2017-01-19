@@ -28,8 +28,7 @@
     dealings in this Software without prior written authorization.
 */
 
-#include "PiperAdapter.h"
-#include "PiperPluginLibrary.h"
+#include "PiperExport.h"
 
 #include "VampTestPlugin.h"
 
@@ -38,6 +37,23 @@ using piper_vamp_js::PiperAdapterBase;
 using piper_vamp_js::PiperPluginLibrary;
 
 static std::string soname("vamp-test-plugin");
+
+/*
+   This is an example of a library that exports more than one "plugin"
+   from a single C++ class. The VampTestPlugin class is constructed
+   with an argument that determines whether it is a time- or
+   frequency-domain plugin, and the library offers both.
+
+   Where normally a library that offered two plugins would have two
+   static PiperAdapters specialised with the two plugin classes, here
+   we want two static PiperAdapters specialised with the same class
+   but different constructor arguments. This is one way to do that,
+   taking advantage of the fact that PiperAdapterBase exposes
+   createPlugin as a virtual method.
+
+   Note that a very similar mechanism is used in the standard Vamp
+   version of this plugin library.
+*/
 
 class Adapter : public PiperAdapterBase<VampTestPlugin>
 {
@@ -62,22 +78,5 @@ static PiperPluginLibrary library({
     &freqAdapter
 });
 
-extern "C" {
-
-const char *piperRequestJson(const char *request) {
-    return library.requestJson(request);
-}
-
-const char *piperProcessRaw(int handle,
-                              const float *const *inputBuffers,
-                              int sec,
-                              int nsec) {
-    return library.processRaw(handle, inputBuffers, sec, nsec);
-}
-    
-void piperFreeJson(const char *json) {
-    return library.freeJson(json);
-}
-
-}
+PIPER_EXPORT_LIBRARY(library);
 

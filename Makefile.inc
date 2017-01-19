@@ -7,6 +7,8 @@ help:
 		@echo
 		@echo "$$ make em"
 		@echo "  - build Javascript module using Emscripten"
+		@echo "$$ make test"
+		@echo "  - build and run simple load test of Javascript module using node.js"
 		@echo "$$ make linux"
 		@echo "  - build native-code module on Linux (currently this is mostly for testing)"
 		@echo "$$ make clean"
@@ -65,23 +67,22 @@ EMFLAGS		:= \
 CXX_SOURCES	:= $(MODULE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(SDK_SOURCES) $(OTHER_SOURCES)
 C_SOURCES	:= $(PLUGIN_C_SOURCES) $(C_SOURCES)
 
-#OPTFLAGS	:= -g3
-OPTFLAGS	:= -O3 -ffast-math
+#OPTFLAGS	?= -g3
+OPTFLAGS	?= -O
 
 DEFINES		:= $(DEFINES)
-
-INCPATH		:= -I$(SRC_DIR) -I$(SDK_DIR) -I$(PIPERCPP_DIR) $(INCPATH)
+INCLUDES	:= -I$(SRC_DIR) -I$(SDK_DIR) -I$(PIPERCPP_DIR) $(INCLUDES)
 
 em:	$(EM_MODULE)
 em:	CXX		:= em++
 em:	CC		:= emcc
-em:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCPATH)
-em:	CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCPATH)
+em:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCLUDES)
+em:	CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCLUDES)
 em:	LDFLAGS		:= $(EMFLAGS)
 
 linux:	$(SO_MODULE)
-linux:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(INCPATH)
-linux:	CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(INCPATH)
+linux:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(INCLUDES)
+linux:	CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(INCLUDES)
 linux:	LDFLAGS		:= -shared -Wl,-Bsymbolic -Wl,-soname=$(SO_MODULE) -Wl,-z,defs -Wl,--version-script=$(SRC_DIR)/piper.map -ldl
 
 OBJDIR          := o
@@ -93,11 +94,11 @@ OBJECTS         := $(addprefix $(OBJDIR)/,$(abspath $(ALL_OBJECTS)))
 
 o/%.o:            %.cpp
 		mkdir -p $(dir $@)
-		$(CXX) -c $(INCPATH) $(CXXFLAGS) -o $@ $<
+		$(CXX) -c $(INCLUDES) $(CXXFLAGS) -o $@ $<
 
 o/%.o:            %.c
 		mkdir -p $(dir $@)
-		$(CC) -c $(INCPATH) $(CFLAGS) -o $@ $<
+		$(CC) -c $(INCLUDES) $(CFLAGS) -o $@ $<
 
 $(EM_MODULE):	$(OBJECTS)
 		$(CXX) $(OPTFLAGS) -o $@ $^ $(LDFLAGS) && \
@@ -105,6 +106,9 @@ $(EM_MODULE):	$(OBJECTS)
 
 $(SO_MODULE):	$(OBJECTS)
 		$(CXX) -o $@ $^ $(LDFLAGS)
+
+test:		em
+		node $(MY_DIR)/test/node-load-test.js $(shell pwd)/$(EM_MODULE)
 
 clean:
 		rm -f $(OBJECTS)
