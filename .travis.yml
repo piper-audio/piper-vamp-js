@@ -1,0 +1,26 @@
+dist:
+  - trusty
+
+language:
+  - cpp
+
+sudo:
+  - false
+
+os:
+  - linux
+
+addons:
+  apt:
+    packages:
+      - emscripten
+      
+before_install:
+  - ( cd ../ ; git clone https://github.com/piper-audio/piper )
+  - ( cd ../ ; git clone https://github.com/piper-audio/piper-cpp )
+  - ( cd ../ ; hg clone https://code.soundsoftware.ac.uk/hg/vamp-plugin-sdk )
+
+script:
+  - ( cd examples/vamp-example-plugins && make test )
+  
+
