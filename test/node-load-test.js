@@ -183,22 +183,27 @@ function test() {
     });
     checkSuccess(response);
 
-    const blockSize = response.result.defaultConfiguration.blockSize;
-    const stepSize = response.result.defaultConfiguration.stepSize;
+    var blockSize = response.result.defaultConfiguration.framing.blockSize;
+    var stepSize = response.result.defaultConfiguration.framing.stepSize;
 
     response = request({
         method: "configure",
         params: {
             handle: 1,
             configuration: {
-                blockSize: blockSize,
-                stepSize: stepSize,
+		framing: {
+                    blockSize: blockSize,
+                    stepSize: stepSize,
+		},
                 channelCount: 1
             }
         }
     });
     checkSuccess(response);
 
+    blockSize = response.result.framing.blockSize;
+    stepSize = response.result.framing.stepSize;
+    
     const nblocks = 1000;
 
     const makeBlock = (n => { 

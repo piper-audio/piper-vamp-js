@@ -114,7 +114,7 @@ PiperPluginLibrary::loadPlugin(LoadRequest req, string &err) const
 
 ConfigurationResponse
 PiperPluginLibrary::configurePlugin(ConfigurationRequest req,
-                                      string &err) const
+                                    string &err) const
 {
     for (PluginConfiguration::ParameterMap::const_iterator i =
              req.configuration.parameterValues.begin();
@@ -130,12 +130,46 @@ PiperPluginLibrary::configurePlugin(ConfigurationRequest req,
 
     response.plugin = req.plugin;
 
+    Framing pluginPreferredFraming;
+    pluginPreferredFraming.stepSize = req.plugin->getPreferredStepSize();
+    pluginPreferredFraming.blockSize = req.plugin->getPreferredBlockSize();
+        
+    
     if (req.plugin->initialise(req.configuration.channelCount,
-                               req.configuration.stepSize,
-                               req.configuration.blockSize)) {
+                               req.configuration.framing.stepSize,
+                               req.configuration.framing.blockSize)) {
+
         response.outputs = req.plugin->getOutputDescriptors();
+
+        // If the Vamp plugin initialise() call succeeds, then by
+        // definition it is accepting the step and block size we
+        // passed to it
+        response.framing = req.configuration.framing;
+
     } else {
-        err = "configuration failed (wrong channel count, step size, block size?)";
+        
+        // If initialise() fails, one reason could be that it didn't
+        // like the passed-in framing (step and block size). We need
+        // to check whether the passed-in framing differs from the
+        // plugin's preferences; if so, then we form a working
+        // supposition that initialise() failed because of this. Vamp
+        // contains nothing to allow us to test this, except to try
+        // initialise() again with different values. So we try again
+        // with the values the plugin told us it would prefer and, if
+        // that succeeds, return them in a successful response.
+        // 
+        // See also LoaderRequests in piper-cpp/vamp-support.
+        //
+        if (req.plugin->initialise(req.configuration.channelCount,
+                                   pluginPreferredFraming.stepSize,
+                                   pluginPreferredFraming.blockSize)) {
+
+            response.outputs = req.plugin->getOutputDescriptors();
+            response.framing = pluginPreferredFraming;
+
+        } else {
+            err = "configuration failed (wrong channel count, step size, block size?)";
+        }
     }
 
     return response;
@@ -248,7 +282,7 @@ PiperPluginLibrary::requestJsonImpl(string req)
                 } else {
                     m_mapper.markConfigured(h,
                                             req.configuration.channelCount,
-                                            req.configuration.blockSize);
+                                            req.configuration.framing.blockSize);
                     rj = VampJson::fromRpcResponse_Configure(resp, m_mapper, id);
                 }
             }
