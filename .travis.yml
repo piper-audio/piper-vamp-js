@@ -13,6 +13,7 @@ os:
 addons:
   apt:
     packages:
+      - llvm-3.2
       - emscripten
       
 before_install:
