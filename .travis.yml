@@ -20,7 +20,7 @@ before_install:
   - ( cd ../ ; git clone https://github.com/piper-audio/piper )
   - ( cd ../ ; git clone https://github.com/piper-audio/piper-cpp )
   - ( cd ../ ; hg clone https://code.soundsoftware.ac.uk/hg/vamp-plugin-sdk )
-  - ( apt-get remove -y llvm-3.5 )
+  - ( sudo apt-get remove -y llvm-3.5 )
   - em++ --version
 
 script:
