@@ -6,7 +6,7 @@ using namespace std;
 
 int main(int, char **)
 {
-    string example = "../examples/VampExamplePlugins.so";
+    string example = "../examples/vamp-example-plugins/VampExamplePlugins.so";
     
     void *lib = dlopen(example.c_str(), RTLD_LAZY | RTLD_LOCAL);
     if (!lib) {
@@ -40,7 +40,7 @@ int main(int, char **)
     cout << loadResponse << endl;
     freeFn(loadResponse);
 
-    string configRequest = "{\"method\":\"configure\",\"params\":{\"handle\":1,\"configuration\":{\"blockSize\":8,\"channelCount\":1,\"stepSize\":8}}}";
+    string configRequest = "{\"method\":\"configure\",\"params\":{\"handle\":1,\"configuration\":{\"framing\":{\"blockSize\":8,\"stepSize\": 8},\"channelCount\":1}}}";
     const char *configResponse = reqFn(configRequest.c_str());
     cout << configResponse << endl;
     freeFn(configResponse);
@@ -59,5 +59,7 @@ int main(int, char **)
     const char *finishResponse = reqFn(finishRequest.c_str());
     cout << finishResponse << endl;
     freeFn(finishResponse);
+
+    return 0;
 }
 
