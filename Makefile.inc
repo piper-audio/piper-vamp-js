@@ -23,7 +23,7 @@ MY_DIR		:= $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 SRC_DIR		:= $(MY_DIR)/src
 SDK_DIR		:= $(MY_DIR)/../vamp-plugin-sdk
-PIPERCPP_DIR    := $(MY_DIR)/../piper-cpp
+PIPERCPP_DIR    := $(MY_DIR)/../piper-vamp-cpp
 
 ADAPTER_HEADERS	:= \
 		$(SRC_DIR)/PiperAdapter.h \
