@@ -5,6 +5,8 @@ Compile your C++ Vamp plugin code into a Javascript module that
 exports the Piper JSON protocol, for use with Javascript code that
 uses Piper audio feature extractors.
 
+_This is pre-1.0 code and the API may change at any time_
+
 ## What this repository contains
 
  * Adapter code to make a Vamp plugin library into a module that
