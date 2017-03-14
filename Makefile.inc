@@ -115,7 +115,7 @@ $(SO_MODULE):	$(OBJECTS)
 		$(CXX) -o $@ $^ $(LDFLAGS)
 
 test:		em
-		node $(MY_DIR)/test/node-load-test.js $(shell pwd)/$(EM_MODULE_U)
+		node $(MY_DIR)/test/node-load-test.js $(shell pwd)/$(EM_MODULE)
 
 clean:
 		rm -f $(OBJECTS)
