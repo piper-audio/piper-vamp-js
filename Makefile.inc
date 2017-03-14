@@ -49,7 +49,9 @@ OTHER_SOURCES	:= \
 		$(PIPERCPP_DIR)/ext/json11/json11.cpp
 
 EM_MODULE_EXT	:= .js
+EM_MODULE_U_EXT	:= .umd.js
 EM_MODULE	:= $(MODULE_NAME)$(EM_MODULE_EXT)
+EM_MODULE_U	:= $(MODULE_NAME)$(EM_MODULE_U_EXT)
 EM_MODULE_SYMBOL	:= $(MODULE_NAME)Module
 
 SO_MODULE_EXT	:= .so
@@ -73,7 +75,7 @@ OPTFLAGS	?= -O
 DEFINES		:= $(DEFINES)
 INCLUDES	:= -I$(SRC_DIR) -I$(SDK_DIR) -I$(PIPERCPP_DIR) -I$(PIPERCPP_DIR)/ext $(INCLUDES)
 
-em:	$(EM_MODULE)
+em:	$(EM_MODULE) $(EM_MODULE_U)
 em:	CXX		:= em++
 em:	CC		:= emcc
 em:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCLUDES)
@@ -102,13 +104,18 @@ o/%.o:            %.c
 
 $(EM_MODULE):	$(OBJECTS)
 		$(CXX) $(OPTFLAGS) -o $@ $^ $(LDFLAGS) && \
-		( echo "if (typeof process === 'object') module.exports=$(EM_MODULE_SYMBOL);" >> $(EM_MODULE) )
+                ( echo "if (typeof process === 'object') module.exports=$(EM_MODULE_SYMBOL);" >> $(EM_MODULE) )
+
+$(EM_MODULE_U): $(EM_MODULE)
+		( echo "(function (factory) { if (typeof module === 'object' && typeof module.exports === 'object') { factory(module.exports); } else if (typeof define === 'function' && define.amd) { define([\"exports\"], factory); } } ) (function (exports) { \"use strict\"; exports.createLibrary = function(Module) { Module = Module || {};" > $(EM_MODULE_U) ) && \
+		tail -n +4 $(EM_MODULE) | head -n -4 >> $(EM_MODULE_U) && \
+		( echo ; echo "return Module; }; }); " >> $(EM_MODULE_U) )
 
 $(SO_MODULE):	$(OBJECTS)
 		$(CXX) -o $@ $^ $(LDFLAGS)
 
 test:		em
-		node $(MY_DIR)/test/node-load-test.js $(shell pwd)/$(EM_MODULE)
+		node $(MY_DIR)/test/node-load-test.js $(shell pwd)/$(EM_MODULE_U)
 
 clean:
 		rm -f $(OBJECTS)
