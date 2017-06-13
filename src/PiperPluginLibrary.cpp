@@ -114,6 +114,7 @@ PiperPluginLibrary::loadPlugin(LoadRequest req, string &err) const
 
 ConfigurationResponse
 PiperPluginLibrary::configurePlugin(ConfigurationRequest req,
+                                    const PluginStaticData &psd,
                                     string &err) const
 {
     for (PluginConfiguration::ParameterMap::const_iterator i =
@@ -127,13 +128,12 @@ PiperPluginLibrary::configurePlugin(ConfigurationRequest req,
     }
 
     ConfigurationResponse response;
-
     response.plugin = req.plugin;
+    response.staticOutputInfo = psd.staticOutputInfo;
 
     Framing pluginPreferredFraming;
     pluginPreferredFraming.stepSize = req.plugin->getPreferredStepSize();
     pluginPreferredFraming.blockSize = req.plugin->getPreferredBlockSize();
-        
     
     if (req.plugin->initialise(req.configuration.channelCount,
                                req.configuration.framing.stepSize,
@@ -171,7 +171,7 @@ PiperPluginLibrary::configurePlugin(ConfigurationRequest req,
             err = "configuration failed (wrong channel count, step size, block size?)";
         }
     }
-
+    
     return response;
 }
 
@@ -258,6 +258,8 @@ PiperPluginLibrary::requestJsonImpl(string req)
                 rj = VampJson::fromError(err, type, id);
             } else {
                 m_mapper.addPlugin(resp.plugin);
+                m_pluginStaticData[m_mapper.pluginToHandle(resp.plugin)] =
+                    resp.staticData;
                 rj = VampJson::fromRpcResponse_Load(resp, m_mapper, id);
             }
         }
@@ -272,11 +274,14 @@ PiperPluginLibrary::requestJsonImpl(string req)
         } else {
             auto h = m_mapper.pluginToHandle(req.plugin);
             if (h == m_mapper.INVALID_HANDLE) {
-                rj = VampJson::fromError("unknown or invalid plugin handle", type, id);
+                rj = VampJson::fromError
+                    ("unknown or invalid plugin handle", type, id);
             } else if (m_mapper.isConfigured(h)) {
-                rj = VampJson::fromError("plugin has already been configured", type, id);
+                rj = VampJson::fromError
+                    ("plugin has already been configured", type, id);
             } else {
-                auto resp = configurePlugin(req, err);
+                PluginStaticData psd(m_pluginStaticData[h]);
+                auto resp = configurePlugin(req, psd, err);
                 if (err != "") {
                     rj = VampJson::fromError(err, type, id);
                 } else {
@@ -302,11 +307,14 @@ PiperPluginLibrary::requestJsonImpl(string req)
             auto h = m_mapper.pluginToHandle(req.plugin);
             int channels = int(req.inputBuffers.size());
             if (h == m_mapper.INVALID_HANDLE) {
-                rj = VampJson::fromError("unknown or invalid plugin handle", type, id);
+                rj = VampJson::fromError
+                    ("unknown or invalid plugin handle", type, id);
             } else if (!m_mapper.isConfigured(h)) {
-                rj = VampJson::fromError("plugin has not been configured", type, id);
+                rj = VampJson::fromError
+                    ("plugin has not been configured", type, id);
             } else if (channels != m_mapper.getChannelCount(h)) {
-                rj = VampJson::fromError("wrong number of channels supplied", type, id);
+                rj = VampJson::fromError
+                    ("wrong number of channels supplied", type, id);
             } else {
 
                 if (serialisation == VampJson::BufferSerialisation::Base64) {
@@ -320,7 +328,8 @@ PiperPluginLibrary::requestJsonImpl(string req)
                     if (req.inputBuffers[i].size() != blockSize) {
                         delete[] fbuffers;
                         fbuffers = 0;
-                        rj = VampJson::fromError("wrong block size supplied", type, id);
+                        rj = VampJson::fromError
+                            ("wrong block size supplied", type, id);
                         break;
                     }
                     fbuffers[i] = req.inputBuffers[i].data();
@@ -347,7 +356,8 @@ PiperPluginLibrary::requestJsonImpl(string req)
         } else {
             auto h = m_mapper.pluginToHandle(req.plugin);
             if (h == m_mapper.INVALID_HANDLE) {
-                rj = VampJson::fromError("unknown or invalid plugin handle", type, id);
+                rj = VampJson::fromError
+                    ("unknown or invalid plugin handle", type, id);
             } else {
 
                 FinishResponse resp;
@@ -363,7 +373,8 @@ PiperPluginLibrary::requestJsonImpl(string req)
 
                 rj = VampJson::fromRpcResponse_Finish
                     (resp, m_mapper, serialisation, id);
-	
+
+                m_pluginStaticData.erase(h);
                 m_mapper.removePlugin(h);
                 delete req.plugin;
             }
