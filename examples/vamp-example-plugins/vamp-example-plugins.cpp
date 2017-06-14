@@ -4,7 +4,7 @@
     Piper
 
     Centre for Digital Music, Queen Mary, University of London.
-    Copyright 2015-2016 QMUL.
+    Copyright 2015-2017 QMUL.
   
     Permission is hereby granted, free of charge, to any person
     obtaining a copy of this software and associated documentation
@@ -44,21 +44,101 @@
 using piper_vamp_js::PiperAdapter;
 using piper_vamp_js::PiperPluginLibrary;
 
-static std::string soname("vamp-example-plugins");
+static std::string libname("vamp-example-plugins");
 
-static PiperAdapter<ZeroCrossing> zeroCrossingAdapter(soname);
-static PiperAdapter<SpectralCentroid> spectralCentroidAdapter(soname);
-static PiperAdapter<PercussionOnsetDetector> percussionOnsetAdapter(soname);
-static PiperAdapter<FixedTempoEstimator> fixedTempoAdapter(soname);
-static PiperAdapter<AmplitudeFollower> amplitudeAdapter(soname);
-static PiperAdapter<PowerSpectrum> powerSpectrumAdapter(soname);
+static PiperAdapter<ZeroCrossing>
+zeroCrossingAdapter(
+    libname,
+    { "Low Level Features" },
+    {
+        { "counts",
+            { "http://purl.org/ontology/af/ZeroCrossingCount" }
+        },
+        { "zerocrossings",
+            { "http://purl.org/ontology/af/ZeroCrossing" }
+        }
+    }
+    );
+
+static PiperAdapter<SpectralCentroid>
+spectralCentroidAdapter(
+    libname,
+    { "Low Level Features" },
+    {
+        { "logcentroid",
+            { "http://purl.org/ontology/af/LogFrequencyCentroid" }
+        },
+        { "linearcentroid",
+            { "http://purl.org/ontology/af/LinearFrequencyCentroid" }
+        }
+    }
+    );
+
+static PiperAdapter<PercussionOnsetDetector>
+percussionOnsetsAdapter(
+    libname,
+    { "Time", "Onsets" },
+    {
+        { "onsets",
+            { "http://purl.org/ontology/af/Onset" }
+        },
+        { "detectionfunction",
+            { "http://purl.org/ontology/af/OnsetDetectionFunction" }
+        }
+    }
+    );
+
+static PiperAdapter<AmplitudeFollower>
+amplitudeFollowerAdapter(
+    libname,
+    { "Low Level Features" },
+    {
+        { "amplitude",
+            { "http://purl.org/ontology/af/Signal" }
+        }
+    }
+    );
+
+static PiperAdapter<FixedTempoEstimator>
+fixedTempoAdapter(
+    libname,
+    { "Time", "Tempo" },
+    {
+        { "tempo",
+            { "http://purl.org/ontology/af/Tempo" }
+        },
+        { "candidates",
+            { "http://purl.org/ontology/af/Tempo" }
+        },
+        { "detectionfunction",
+            { "http://purl.org/ontology/af/OnsetDetectionFunction" }
+        },
+        { "acf",
+            { "http://purl.org/ontology/af/Signal" }
+        },
+        { "filtered_acf",
+            { "http://purl.org/ontology/af/Signal" }
+        }
+    }
+    );
+
+static PiperAdapter<PowerSpectrum>
+powerSpectrumAdapter(
+    libname,
+    { "Visualisation" },
+    {
+        { "powerspectrum",
+            { "http://purl.org/ontology/af/Signal" }
+        }
+    }
+    );
 
 static PiperPluginLibrary library({
     &zeroCrossingAdapter,
     &spectralCentroidAdapter,
-    &percussionOnsetAdapter,
+    &percussionOnsetsAdapter,
+    &amplitudeFollowerAdapter,
     &fixedTempoAdapter,
-    &amplitudeAdapter,
     &powerSpectrumAdapter
 });
 
