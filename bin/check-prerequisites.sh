@@ -47,18 +47,14 @@ EOF
     exit 2
 }
 
-
 for sibling in vamp-plugin-sdk piper piper-vamp-cpp vamp-test-plugin ; do
-
     dir=$(sibling_dir "$sibling")
-    
     if [ ! -d "$parent_dir/$sibling" ]; then
         echo 1>&2
         echo "*** Failed to find sibling directory $sibling" 1>&2
         echo "*** (expected in full path: $dir)" 1>&2
         explain_and_exit
     fi
-    
 done
 
 for program in em++ node ; do
