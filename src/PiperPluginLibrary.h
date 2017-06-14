@@ -81,7 +81,8 @@ private:
     // map from pluginKey -> adapter
     std::map<std::string, PiperAdapterInterface *> m_adapters;
 
-    // map from plugin handle -> plugin static data
+    // map from plugin handle -> plugin static data. Added to when a
+    // plugin is loaded, removed from when finish() is called.
     std::map<piper_vamp::PluginHandleMapper::Handle,
              piper_vamp::PluginStaticData> m_pluginStaticData;
         
