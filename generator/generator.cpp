@@ -74,7 +74,7 @@ static void usage(bool successful = false)
 {
     cerr << "\n" << myname <<
         ": Emit a preliminary version of the main code\nfor a Piper Adapter implementation of a Vamp plugin library\n\n"
-        "    Usage: " << myname << " [-d] <libname>\n"
+        "    Usage: " << myname << " <libname>\n"
         "           " << myname << " -v\n"
         "           " << myname << " -h\n\n"
         "    where\n"
