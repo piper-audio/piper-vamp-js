@@ -1,4 +1,35 @@
 
+# This GNU Makefile fragment is intended to be included from the
+# Makefile for a Piper adapter, for use when recompiling an existing
+# Vamp plugin (in C++) into a Javascript module.
+#
+# This fragment defines all of the actual build targets for the
+# module. Your including Makefile should define some or all of the
+# following variables before including it:
+#
+# MODULE_SOURCE - The name of the .cpp file for the module main entry
+# point, e.g. vamp-example-plugins.cpp. You must write this file; it
+# is not the same as the plugin library entry point used for the
+# original Vamp plugin build. You can use the generator program (in
+# piper-vamp-js/generator) to generate a preliminary version based on
+# metadata reported by your actual plugin library, but it will usually
+# still need some editing.
+#
+# MODULE_NAME - The name of the target feature extraction module.
+# Typically a camel-cased representation of the Vamp plugin library
+# name, like VampExamplePlugins.
+#
+# PLUGIN_SOURCES - All C++ source files for the plugin library.
+#
+# PLUGIN_C_SOURCES - Any C source files for the plugin library.
+#
+# DEFINES - Any additional -D flags for the C/C++ compiler.
+#
+# INCLUDES - Any additional -I flags for the C/C++ compiler.
+#
+# EMFLAGS - Any additional Emscripten-specific flags to pass to the
+# compiler.
+
 default:        help
 
 help:

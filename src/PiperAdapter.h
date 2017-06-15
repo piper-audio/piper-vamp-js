@@ -38,6 +38,7 @@
 #include "vamp-support/PluginStaticData.h"
 #include "vamp-support/PluginConfiguration.h"
 #include "vamp-support/RequestResponse.h"
+#include "vamp-support/StaticOutputDescriptor.h"
 
 #include <vamp-hostsdk/PluginInputDomainAdapter.h>
 #include <vamp-hostsdk/PluginBufferingAdapter.h>
@@ -62,7 +63,12 @@ class PiperAdapterBase : public PiperAdapterInterface
     const int adaptBufferSize = 0x04;
 
 protected:
-    PiperAdapterBase(std::string libname) : m_soname(libname) { }
+    PiperAdapterBase(std::string libname,
+                     std::vector<std::string> category = {},
+                     piper_vamp::StaticOutputInfo staticOutputInfo = {}) :
+        m_soname(libname),
+        m_category(category),
+        m_staticOutputInfo(staticOutputInfo) { }
     
 public:
     virtual std::string getLibraryName() const override {
@@ -73,8 +79,9 @@ public:
         Vamp::Plugin *p = createPlugin(44100.f);
 	auto data = piper_vamp::PluginStaticData::fromPlugin
 	    (m_soname + ":" + p->getIdentifier(),
-	     {}, //!!! todo: category - tricky one that
+             m_category,
 	     p);
+        data.staticOutputInfo = m_staticOutputInfo;
         delete p;
         return data;
     }
@@ -107,8 +114,9 @@ public:
 
 	response.staticData = piper_vamp::PluginStaticData::fromPlugin
 	    (m_soname + ":" + p->getIdentifier(),
-	     {}, //!!! todo: category - tricky one that
+             m_category,
 	     p);
+        response.staticData.staticOutputInfo = m_staticOutputInfo;
 
 	int defaultChannels = 0;
 	if (p->getMinChannelCount() == p->getMaxChannelCount()) {
@@ -141,13 +149,18 @@ public:
     
 private:
     std::string m_soname;
+    std::vector<std::string> m_category;
+    piper_vamp::StaticOutputInfo m_staticOutputInfo;
 };
 
 template <typename P>
 class PiperAdapter : public PiperAdapterBase<P>
 {
 public:
-    PiperAdapter(std::string libname) : PiperAdapterBase<P>(libname) { }
+    PiperAdapter(std::string libname,
+                 std::vector<std::string> category = {},
+                 piper_vamp::StaticOutputInfo staticOutputInfo = {}) :
+        PiperAdapterBase<P>(libname, category, staticOutputInfo) { }
     
     virtual Vamp::Plugin *createPlugin(float inputSampleRate) const override {
         return new P(inputSampleRate);

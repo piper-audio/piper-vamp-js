@@ -1,7 +1,7 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 /*
     Vamp Test Plugin
-    Copyright (c) 2013-2016 Queen Mary, University of London
+    Copyright (c) 2013-2017 Queen Mary, University of London
 
     Permission is hereby granted, free of charge, to any person
     obtaining a copy of this software and associated documentation
@@ -36,7 +36,7 @@ using piper_vamp_js::PiperAdapter;
 using piper_vamp_js::PiperAdapterBase;
 using piper_vamp_js::PiperPluginLibrary;
 
-static std::string soname("vamp-test-plugin");
+static std::string libname("vamp-test-plugin");
 
 /*
    This is an example of a library that exports more than one "plugin"
@@ -59,7 +59,7 @@ class Adapter : public PiperAdapterBase<VampTestPlugin>
 {
 public:
     Adapter(bool freq) :
-        PiperAdapterBase<VampTestPlugin>(soname),
+        PiperAdapterBase<VampTestPlugin>(libname, { "Development" }),
         m_freq(freq) { }
 
 protected:

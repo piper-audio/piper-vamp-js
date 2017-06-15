@@ -72,12 +72,20 @@ private:
     piper_vamp::ListResponse listPluginData(piper_vamp::ListRequest r) const;
     piper_vamp::LoadResponse loadPlugin(piper_vamp::LoadRequest r,
                                         std::string &err) const;
-    piper_vamp::ConfigurationResponse configurePlugin(piper_vamp::ConfigurationRequest r,
-                                                      std::string &err)
+    piper_vamp::ConfigurationResponse
+    configurePlugin(piper_vamp::ConfigurationRequest r,
+                    const piper_vamp::PluginStaticData &psd,
+                    std::string &err)
         const;
 
     // map from pluginKey -> adapter
     std::map<std::string, PiperAdapterInterface *> m_adapters;
+
+    // map from plugin handle -> plugin static data. Added to when a
+    // plugin is loaded, removed from when finish() is called.
+    std::map<piper_vamp::PluginHandleMapper::Handle,
+             piper_vamp::PluginStaticData> m_pluginStaticData;
+        
     piper_vamp::CountingPluginHandleMapper m_mapper;
     bool m_useBase64;
 };
