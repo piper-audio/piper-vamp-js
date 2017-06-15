@@ -8,7 +8,7 @@ INCFLAGS	:= -I$(PIPERCPP_DIR) -I$(PIPERCPP_DIR)/ext -I$(PIPERCPP_DIR)/ext/serd -
 OBJECTS		:= ./generator.o $(PIPERCPP_DIR)/ext/sord/sord-single.o
 
 CXXFLAGS	:= -Wall -Wextra -g3 -std=c++11 $(INCFLAGS)
-CFLAGS		:= -Wall -g3 $(INCFLAGS)
+CFLAGS		:= -Wall -g3 -std=c99 $(INCFLAGS)
 
 LDFLAGS		:= $(VAMPSDK_DIR)/libvamp-hostsdk.a
 

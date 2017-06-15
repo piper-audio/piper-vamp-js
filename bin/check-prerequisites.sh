@@ -57,13 +57,21 @@ for sibling in vamp-plugin-sdk piper piper-vamp-cpp vamp-test-plugin ; do
     fi
 done
 
-for program in em++ node ; do
-    if ! "$program" -v >/dev/null 2>&1 ; then
-        "$program" -v
+if ! em++ -v >/dev/null 2>&1 ; then
+    em++ -v
+    echo 1>&2
+    echo "*** Failed to find or run required program em++" 1>&2
+    explain_and_exit
+fi
+
+if ! nodejs -v >/dev/null 2>&1 ; then
+    if ! node -v >/dev/null 2>&1 ; then
+        nodejs -v
+        node -v
         echo 1>&2
-        echo "*** Failed to find or run required program $program" 1>&2
+        echo "*** Failed to find or run required program node (as either nodejs or node)" 1>&2
         explain_and_exit
     fi
-done
+fi
 
 
