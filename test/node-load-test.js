@@ -181,6 +181,9 @@ function test() {
             adapterFlags: ["AdaptAllSafe"]
         }
     });
+
+//    note("Load request returned: " + JSON.stringify(response) + "\n");
+    
     checkSuccess(response);
 
     var blockSize = response.result.defaultConfiguration.framing.blockSize;
