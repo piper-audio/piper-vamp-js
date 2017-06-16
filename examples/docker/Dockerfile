@@ -122,7 +122,9 @@ RUN perl -i -p -e 's,^//.*\n,,' cepstral-pitchtracker.cpp
 RUN cat cepstral-pitchtracker.cpp
 
 
-# Phase 4. Create a Makefile and run the JS module build.
+# Phase 4. Create a Makefile and run the JS module build. This is a
+# bit ugly because we're trying to stuff the whole content of the
+# Makefile into our Docker script!
 #
 RUN echo \
 'PIPER_VAMP_JS_DIR	:= ../piper-vamp-js\n\n\
