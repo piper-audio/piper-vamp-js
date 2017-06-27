@@ -141,7 +141,7 @@ $(EM_MODULE):	$(OBJECTS)
 
 $(EM_MODULE_U): $(EM_MODULE)
 		( echo "(function (factory) { if (typeof module === 'object' && typeof module.exports === 'object') { factory(module.exports); } else if (typeof define === 'function' && define.amd) { define([\"exports\"], factory); } } ) (function (exports) { \"use strict\"; exports.createLibrary = function(Module) { Module = Module || {};" > $(EM_MODULE_U) ) && \
-		tail -n +4 $(EM_MODULE) | head -n $$(($$(wc -l $(EM_MODULE) | awk '{ print $$1; }') - 7)) >> $(EM_MODULE_U) && \
+		head -n $$(($$(wc -l $(EM_MODULE) | awk '{ print $$1; }') - 4)) $(EM_MODULE) | tail -n +4 >> $(EM_MODULE_U) && \
 		( echo ; echo "return Module; }; }); " >> $(EM_MODULE_U) )
 
 $(SO_MODULE):	$(OBJECTS)
