@@ -136,19 +136,18 @@ o/%.o:            %.c
 		$(CC) -c $(INCLUDES) $(CFLAGS) -o $@ $<
 
 $(EM_MODULE):	$(OBJECTS)
-		$(CXX) $(OPTFLAGS) -o $@ $^ $(LDFLAGS) && \
-                ( echo "if (typeof process === 'object') module.exports=$(EM_MODULE_SYMBOL);" >> $(EM_MODULE) )
-
+		$(CXX) $(OPTFLAGS) -o $@ $^ $(LDFLAGS)
+    
 $(EM_MODULE_U): $(EM_MODULE)
-		( echo "(function (factory) { if (typeof module === 'object' && typeof module.exports === 'object') { factory(module.exports); } else if (typeof define === 'function' && define.amd) { define([\"exports\"], factory); } } ) (function (exports) { \"use strict\"; exports.createLibrary = function(Module) { Module = Module || {};" > $(EM_MODULE_U) ) && \
-		tail -n +4 $(EM_MODULE) | head -n $$(($$(wc -l $(EM_MODULE) | awk '{ print $$1; }') - 7)) >> $(EM_MODULE_U) && \
-		( echo ; echo "return Module; }; }); " >> $(EM_MODULE_U) )
+		( echo "(function(root,factory){if(typeof define==='function'&&define.amd){define([],factory);}else if(typeof module==='object'&&module.exports){module.exports=factory();}else{root['$(EM_MODULE_SYMBOL)']=factory();}}(this,function(){" > $(EM_MODULE_U) ) && \
+		cat $(EM_MODULE) >> $(EM_MODULE_U) && \
+		( echo ; echo "return $(EM_MODULE_SYMBOL);}));" >> $(EM_MODULE_U) )
 
 $(SO_MODULE):	$(OBJECTS)
 		$(CXX) -o $@ $^ $(LDFLAGS)
 
 test:		em
-		$(NODE) $(MY_DIR)/test/node-load-test.js $(shell pwd)/$(EM_MODULE)
+		$(NODE) $(MY_DIR)/test/node-load-test.js $(shell pwd)/$(EM_MODULE_U)
 
 clean:
 		rm -f $(OBJECTS)
