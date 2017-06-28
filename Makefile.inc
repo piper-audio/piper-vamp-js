@@ -81,9 +81,9 @@ OTHER_SOURCES	:= \
 
 NODE            ?= node
 
-EM_MODULE_EXT	:= .js
+EM_MODULE_T_EXT	:= .tmp.js
 EM_MODULE_U_EXT	:= .umd.js
-EM_MODULE	:= $(MODULE_NAME)$(EM_MODULE_EXT)
+EM_MODULE_T	:= $(MODULE_NAME)$(EM_MODULE_T_EXT)
 EM_MODULE_U	:= $(MODULE_NAME)$(EM_MODULE_U_EXT)
 EM_MODULE_SYMBOL	:= $(MODULE_NAME)Module
 
@@ -108,7 +108,7 @@ OPTFLAGS	?= -O
 DEFINES		:= $(DEFINES)
 INCLUDES	:= -I$(SRC_DIR) -I$(SDK_DIR) -I$(PIPERCPP_DIR) -I$(PIPERCPP_DIR)/ext $(INCLUDES)
 
-em:	$(EM_MODULE) $(EM_MODULE_U)
+em:	$(EM_MODULE_U)
 em:	CXX		:= em++
 em:	CC		:= emcc
 em:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCLUDES)
@@ -135,12 +135,11 @@ o/%.o:            %.c
 		mkdir -p $(dir $@)
 		$(CC) -c $(INCLUDES) $(CFLAGS) -o $@ $<
 
-$(EM_MODULE):	$(OBJECTS)
-		$(CXX) $(OPTFLAGS) -o $@ $^ $(LDFLAGS)
-    
-$(EM_MODULE_U): $(EM_MODULE)
+$(EM_MODULE_U):	$(OBJECTS)
+		$(CXX) $(OPTFLAGS) -o $(EM_MODULE_T) $^ $(LDFLAGS) && \
 		( echo "(function(root,factory){if(typeof define==='function'&&define.amd){define([],factory);}else if(typeof module==='object'&&module.exports){module.exports=factory();}else{root['$(EM_MODULE_SYMBOL)']=factory();}}(this,function(){" > $(EM_MODULE_U) ) && \
-		cat $(EM_MODULE) >> $(EM_MODULE_U) && \
+		cat $(EM_MODULE_T) >> $(EM_MODULE_U) && \
+                rm $(EM_MODULE_T) && \
 		( echo ; echo "return $(EM_MODULE_SYMBOL);}));" >> $(EM_MODULE_U) )
 
 $(SO_MODULE):	$(OBJECTS)
@@ -153,4 +152,5 @@ clean:
 		rm -f $(OBJECTS)
 
 distclean:	clean
-		rm -f $(EM_MODULE) $(SO_MODULE)
+		rm -f $(EM_MODULE_T) $(EM_MODULE_U) $(SO_MODULE)
+
