@@ -22,6 +22,16 @@ protocol. Limitations on performance and memory usage may apply.
    examples/vamp-example-plugins and examples/vamp-test-plugin
    directories.
 
+ * A utility (piper-vamp-stub-generator) that loads up an existing
+   Vamp plugin and queries it along with its accompanying metadata,
+   writing out a first draft of the converted module's main function
+   code based on what it finds in the plugin.
+
+ * A complete worked example of using that utility and building the
+   resulting module, in a Docker script that can be read as
+   documentation or run within Docker on Linux, found in
+   examples/docker/Dockerfile.
+
 ## Authors and licensing
 
 Written by Chris Cannam and Lucas Thompson at the Centre for Digital
