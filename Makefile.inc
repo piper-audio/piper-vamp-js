@@ -87,6 +87,11 @@ EM_MODULE_T	:= $(MODULE_NAME)$(EM_MODULE_T_EXT)
 EM_MODULE_U	:= $(MODULE_NAME)$(EM_MODULE_U_EXT)
 EM_MODULE_SYMBOL	:= $(MODULE_NAME)Module
 
+WASM_MODULE_T_EXT := _w.js
+WASM_MODULE_U_EXT := _w.umd.js
+WASM_MODULE_T   := $(MODULE_NAME)$(WASM_MODULE_T_EXT)
+WASM_MODULE_U   := $(MODULE_NAME)$(WASM_MODULE_U_EXT)
+
 SO_MODULE_EXT	:= .so
 SO_MODULE	:= $(MODULE_NAME)$(SO_MODULE_EXT)
 
@@ -95,9 +100,15 @@ EMFLAGS		:= \
 		-s MODULARIZE=1 \
 		-s NO_FILESYSTEM=1 \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=1 \
-	    	-s EXPORT_NAME="'$(EM_MODULE_SYMBOL)'" \
-	    	-s EXPORTED_FUNCTIONS="['_piperRequestJson','_piperProcessRaw','_piperFreeJson']" \
+	    	-s "EXPORT_NAME='$(EM_MODULE_SYMBOL)'" \
+	    	-s "EXPORTED_FUNCTIONS=['_piperRequestJson','_piperProcessRaw','_piperFreeJson']" \
 		$(EMFLAGS)
+
+WASMFLAGS       := \
+                $(EMFLAGS) \
+                -s WASM=1
+
+#                -s "BINARYEN_METHOD='native-wasm'"
 
 CXX_SOURCES	:= $(MODULE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(SDK_SOURCES) $(OTHER_SOURCES)
 C_SOURCES	:= $(PLUGIN_C_SOURCES) $(C_SOURCES)
@@ -114,6 +125,13 @@ em:	CC		:= emcc
 em:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCLUDES)
 em:	CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCLUDES)
 em:	LDFLAGS		:= $(EMFLAGS)
+
+wasm:   $(WASM_MODULE_U)
+wasm:   CXX		:= em++
+wasm:	CC		:= emcc
+wasm:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(WASMFLAGS) $(INCLUDES)
+wasm:	CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(WASMFLAGS) $(INCLUDES)
+wasm:	LDFLAGS		:= $(WASMFLAGS)
 
 linux:	$(SO_MODULE)
 linux:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(INCLUDES)
@@ -142,15 +160,25 @@ $(EM_MODULE_U):	$(OBJECTS)
                 rm $(EM_MODULE_T) && \
 		( echo ; echo "return $(EM_MODULE_SYMBOL);}));" >> $(EM_MODULE_U) )
 
+$(WASM_MODULE_U): $(OBJECTS)
+		$(CXX) $(OPTFLAGS) -o $(WASM_MODULE_T) $^ $(LDFLAGS) && \
+		( echo "(function(root,factory){if(typeof define==='function'&&define.amd){define([],factory);}else if(typeof module==='object'&&module.exports){module.exports=factory();}else{root['$(EM_MODULE_SYMBOL)']=factory();}}(this,function(){" > $(WASM_MODULE_U) ) && \
+		cat $(WASM_MODULE_T) >> $(WASM_MODULE_U) && \
+                rm $(WASM_MODULE_T) && \
+		( echo ; echo "return $(EM_MODULE_SYMBOL);}));" >> $(WASM_MODULE_U) )
+
 $(SO_MODULE):	$(OBJECTS)
 		$(CXX) -o $@ $^ $(LDFLAGS)
 
 test:		em
 		$(NODE) $(MY_DIR)/test/node-load-test.js $(shell pwd)/$(EM_MODULE_U)
 
+test-wasm:		wasm
+		$(NODE) $(MY_DIR)/test/node-load-test.js $(shell pwd)/$(WASM_MODULE_U)
+
 clean:
 		rm -f $(OBJECTS)
 
 distclean:	clean
-		rm -f $(EM_MODULE_T) $(EM_MODULE_U) $(SO_MODULE)
+		rm -f $(EM_MODULE_T) $(EM_MODULE_U) $(WASM_MODULE_T) $(WASM_MODULE_U) $(SO_MODULE)
 
