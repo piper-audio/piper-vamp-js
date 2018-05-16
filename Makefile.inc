@@ -97,6 +97,7 @@ EMFLAGS		:= \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=1 \
 	    	-s EXPORT_NAME="'$(EM_MODULE_SYMBOL)'" \
 	    	-s EXPORTED_FUNCTIONS="['_piperRequestJson','_piperProcessRaw','_piperFreeJson']" \
+                -s EXTRA_EXPORTED_RUNTIME_METHODS="['cwrap', 'allocate', 'ALLOC_NORMAL', 'Pointer_stringify', 'intArrayFromString']" \
 		$(EMFLAGS)
 
 CXX_SOURCES	:= $(MODULE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(SDK_SOURCES) $(OTHER_SOURCES)
