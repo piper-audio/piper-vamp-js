@@ -36,10 +36,14 @@ help:
 		@echo
 		@echo "Supported make targets:"
 		@echo
+		@echo "$$ make wasm"
+		@echo "  - build Javascript/WebAssembly module using Emscripten"
+		@echo "$$ make test-wasm"
+		@echo "  - build and run simple test of Javascript/WebAssembly module using node.js"
 		@echo "$$ make em"
 		@echo "  - build Javascript module using Emscripten"
-		@echo "$$ make test"
-		@echo "  - build and run simple load test of Javascript module using node.js"
+		@echo "$$ make test-em"
+		@echo "  - build and run simple test of Javascript module using node.js"
 		@echo "$$ make linux"
 		@echo "  - build native-code module on Linux (currently this is mostly for testing)"
 		@echo "$$ make clean"
@@ -95,21 +99,25 @@ WASM_MODULE_U   := $(MODULE_NAME)$(WASM_MODULE_U_EXT)
 SO_MODULE_EXT	:= .so
 SO_MODULE	:= $(MODULE_NAME)$(SO_MODULE_EXT)
 
-EMFLAGS		:= \
-		--memory-init-file 0 \
+EMFLAGS_ANY	:= \
+                --memory-init-file 0 \
 		-s MODULARIZE=1 \
 		-s NO_FILESYSTEM=1 \
+		-s MEM_INIT_METHOD=0 \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=1 \
 	    	-s "EXPORT_NAME='$(EM_MODULE_SYMBOL)'" \
-	    	-s "EXPORTED_FUNCTIONS=['_piperRequestJson','_piperProcessRaw','_piperFreeJson']" \
+	    	-s "EXPORTED_FUNCTIONS=['_piperRequestJson', '_piperProcessRaw', '_piperFreeJson', '_malloc', '_free']" \
                 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['cwrap', 'allocate', 'ALLOC_NORMAL', 'Pointer_stringify', 'intArrayFromString']" \
 		$(EMFLAGS)
 
-WASMFLAGS       := \
-                $(EMFLAGS) \
-                -s WASM=1
+EMFLAGS_ASMJS   := \
+                $(EMFLAGS_ANY) \
+                -s WASM=0
 
-#                -s "BINARYEN_METHOD='native-wasm'"
+EMFLAGS_WASM    := \
+                $(EMFLAGS_ANY) \
+                -s WASM=1 \
+                -s SINGLE_FILE=1
 
 CXX_SOURCES	:= $(MODULE_SOURCE) $(ADAPTER_SOURCES) $(PLUGIN_SOURCES) $(SDK_SOURCES) $(OTHER_SOURCES)
 C_SOURCES	:= $(PLUGIN_C_SOURCES) $(C_SOURCES)
@@ -123,16 +131,16 @@ INCLUDES	:= -I$(SRC_DIR) -I$(SDK_DIR) -I$(PIPERCPP_DIR) -I$(PIPERCPP_DIR)/ext $(
 em:	$(EM_MODULE_U)
 em:	CXX		:= em++
 em:	CC		:= emcc
-em:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCLUDES)
-em:	CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS) $(INCLUDES)
-em:	LDFLAGS		:= $(EMFLAGS)
+em:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS_ASMJS) $(INCLUDES)
+em:	CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS_ASMJS) $(INCLUDES)
+em:	LDFLAGS		:= $(EMFLAGS_ASMJS)
 
 wasm:   $(WASM_MODULE_U)
 wasm:   CXX		:= em++
 wasm:	CC		:= emcc
-wasm:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(WASMFLAGS) $(INCLUDES)
-wasm:	CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(WASMFLAGS) $(INCLUDES)
-wasm:	LDFLAGS		:= $(WASMFLAGS)
+wasm:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS_WASM) $(INCLUDES)
+wasm:	CFLAGS		:= -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(EMFLAGS_WASM) $(INCLUDES)
+wasm:	LDFLAGS		:= $(EMFLAGS_WASM)
 
 linux:	$(SO_MODULE)
 linux:	CXXFLAGS	:= -std=c++11 -fPIC -Wall -Wextra $(DEFINES) $(OPTFLAGS) $(INCLUDES)
@@ -171,10 +179,10 @@ $(WASM_MODULE_U): $(OBJECTS)
 $(SO_MODULE):	$(OBJECTS)
 		$(CXX) -o $@ $^ $(LDFLAGS)
 
-test:		em
+test-em:	em
 		$(NODE) $(MY_DIR)/test/node-load-test.js $(shell pwd)/$(EM_MODULE_U)
 
-test-wasm:		wasm
+test-wasm:	wasm
 		$(NODE) $(MY_DIR)/test/node-load-test.js $(shell pwd)/$(WASM_MODULE_U)
 
 clean:

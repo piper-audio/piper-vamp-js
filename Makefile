@@ -1,5 +1,5 @@
 
-all:	prerequisites generator examples
+all:	prerequisites generator examples-wasm
 
 prerequisites:
 	./bin/check-prerequisites.sh
@@ -13,9 +13,16 @@ clean:
 generator:
 	$(MAKE) -C generator
 
-.PHONY: examples
-examples:
+.PHONY: examples-em
+examples-em:
 	$(MAKE) -C examples/vamp-example-plugins em
 	$(MAKE) -C examples/vamp-test-plugin em
-	$(MAKE) -C examples/vamp-example-plugins test
-	$(MAKE) -C examples/vamp-test-plugin test
+	$(MAKE) -C examples/vamp-example-plugins test-em
+	$(MAKE) -C examples/vamp-test-plugin test-em
+
+.PHONY: examples-wasm
+examples-wasm:
+	$(MAKE) -C examples/vamp-example-plugins wasm
+	$(MAKE) -C examples/vamp-test-plugin wasm
+	$(MAKE) -C examples/vamp-example-plugins test-wasm
+	$(MAKE) -C examples/vamp-test-plugin test-wasm
