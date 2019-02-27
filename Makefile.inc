@@ -103,15 +103,16 @@ EMFLAGS_ANY	:= \
                 --memory-init-file 0 \
 		-s MODULARIZE=1 \
 		-s NO_FILESYSTEM=1 \
-		-s MEM_INIT_METHOD=0 \
+                -s ASSERTIONS=1 \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=1 \
 	    	-s "EXPORT_NAME='$(EM_MODULE_SYMBOL)'" \
 	    	-s "EXPORTED_FUNCTIONS=['_piperRequestJson', '_piperProcessRaw', '_piperFreeJson', '_malloc', '_free']" \
-                -s "EXTRA_EXPORTED_RUNTIME_METHODS=['cwrap', 'allocate', 'ALLOC_NORMAL', 'Pointer_stringify', 'intArrayFromString']" \
+                -s "EXTRA_EXPORTED_RUNTIME_METHODS=['cwrap', 'allocate', 'ALLOC_NORMAL', 'UTF8ToString', 'intArrayFromString']" \
 		$(EMFLAGS)
 
 EMFLAGS_ASMJS   := \
                 $(EMFLAGS_ANY) \
+		-s MEM_INIT_METHOD=0 \
                 -s WASM=0
 
 EMFLAGS_WASM    := \
@@ -178,6 +179,8 @@ $(WASM_MODULE_U): $(OBJECTS)
 
 $(SO_MODULE):	$(OBJECTS)
 		$(CXX) -o $@ $^ $(LDFLAGS)
+
+test:           test-em test-wasm
 
 test-em:	em
 		$(NODE) $(MY_DIR)/test/node-load-test.js $(shell pwd)/$(EM_MODULE_U)

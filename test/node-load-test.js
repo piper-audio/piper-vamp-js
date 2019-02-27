@@ -65,7 +65,7 @@ extractor().then(function(extractorModule) {
         }
         extractorModule._free(buffersPtr);
 
-        const responseJstr = extractorModule.Pointer_stringify(responseJson);
+        const responseJstr = extractorModule.UTF8ToString(responseJson);
         const response = JSON.parse(responseJstr);
         
         piperFreeJson(responseJson);
@@ -99,7 +99,7 @@ extractor().then(function(extractorModule) {
         let inCstr = m.allocate(m.intArrayFromString(jsonStr), 'i8', m.ALLOC_NORMAL);
         let outCstr = piperRequestJson(inCstr);
         m._free(inCstr);
-        const responseJstr = m.Pointer_stringify(outCstr);
+        const responseJstr = m.UTF8ToString(outCstr);
         const response = JSON.parse(responseJstr);
         piperFreeJson(outCstr);
         return response;

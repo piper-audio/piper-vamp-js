@@ -43,7 +43,7 @@ function test() {
             var inCstr = m.allocate(m.intArrayFromString(jsonStr), 'i8', m.ALLOC_NORMAL);
             var outCstr = piperRequestJson(inCstr);
             m._free(inCstr);
-            var result = m.Pointer_stringify(outCstr);
+            var result = m.UTF8ToString(outCstr);
             piperFreeJson(outCstr);
             note("Returned JSON = " + result);
             return result;
